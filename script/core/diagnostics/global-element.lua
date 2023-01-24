@@ -31,7 +31,6 @@ return function (uri, callback)
         if not name or definedGlobal[name] then
             return
         end
-        -- TODO check if this applies for this rule as well
         -- If the assignment is marked as doc.class, then it is considered allowed 
         if isDocClass(source) then
             return
