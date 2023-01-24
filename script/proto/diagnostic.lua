@@ -175,8 +175,8 @@ m.register {
     'global-element',
 } {
     group   = 'conventions',
-    severity = 'Warning',
-    status = 'Any' -- disabled by default
+    severity = 'Information',
+    status = 'None'
 }
 
 m.register {

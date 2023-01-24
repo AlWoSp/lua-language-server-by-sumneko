@@ -17,7 +17,8 @@ local function isDocClass(source)
     return false
 end
 
--- Global variables with lowercase initials are not allowed to be defined (most likely misspelled or omitted)
+-- If global elements are discouraged by coding convention, this diagnostic helps with reminding about that
+-- Exemptions may be added to Lua.diagnostics.globals
 return function (uri, callback)
     local ast = files.getState(uri)
     if not ast then
