@@ -155,8 +155,7 @@ m.register {
 
 m.register {
     'undefined-global',
-    'global-in-nil-env',
-    'global-variable'
+    'global-in-nil-env'
 } {
     group    = 'global',
     severity = 'Warning',
@@ -170,6 +169,14 @@ m.register {
     group    = 'global',
     severity = 'Information',
     status   = 'Any',
+}
+
+m.register {
+    'global-element',
+} {
+    group   = 'conventions',
+    severity = 'Warning',
+    status = 'Any' -- disabled by default
 }
 
 m.register {

@@ -51,7 +51,7 @@ return function (uri, callback)
         callback {
             start   = source.start,
             finish  = source.finish,
-            message = lang.script.DIAG_GLOBAL_VARIABLE,
+            message = lang.script.DIAG_GLOBAL_ELEMENT,
         }
     end)
 end

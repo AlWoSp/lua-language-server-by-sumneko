@@ -413,7 +413,7 @@ config.diagnostics['unknown-operator']      =
 'Enable diagnostics for unknown operators.'
 config.diagnostics['unreachable-code']      =
 'Enable diagnostics for unreachable code.'
-config.diagnostics['global-variable']       =
+config.diagnostics['global-element']       =
 'Enable diagnostics to warn about global variables.'
 config.typeFormat.config                    =
 'Configures the formatting behavior while typing Lua code.'
