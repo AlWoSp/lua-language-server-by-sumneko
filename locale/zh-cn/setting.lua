@@ -412,6 +412,8 @@ config.diagnostics['unknown-operator']      = -- TODO: need translate!
 'Enable diagnostics for unknown operators.'
 config.diagnostics['unreachable-code']      = -- TODO: need translate!
 'Enable diagnostics for unreachable code.'
+config.diagnostics['global-element']       = -- TODO: need translate!
+'Enable diagnostics to warn about global variables.'
 config.typeFormat.config                    = -- TODO: need translate!
 'Configures the formatting behavior while typing Lua code.'
 config.typeFormat.config.auto_complete_end  = -- TODO: need translate!
