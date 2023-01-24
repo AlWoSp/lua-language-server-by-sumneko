@@ -114,6 +114,12 @@ DIAG_UNDEFINED_DOC_NAME               =
 'Tipo ou alias indefinido `{}`.'
 DIAG_UNDEFINED_DOC_PARAM              =
 'Parâmetro indefinido `{}`.'
+DIAG_MISSING_GLOBAL_DOC               =
+'Missing annotation of global `{}`.'
+DIAG_MISSING_PARAM_DOC                =
+'Missing @param annotation for `{}`.'
+DIAG_MISSING_RETURN_DOC               =
+'Missing @return annotation.'
 DIAG_UNKNOWN_DIAG_CODE                =
 'Código de diagnóstico desconhecido `{}`.'
 DIAG_CAST_LOCAL_TYPE                  = -- TODO: need translate!

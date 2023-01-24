@@ -373,6 +373,12 @@ config.diagnostics['duplicate-set-field']   = -- TODO: need translate!
 'Enable diagnostics for setting the same field in a class more than once.'
 config.diagnostics['invisible']             = -- TODO: need translate!
 'Enable diagnostics for accesses to fields which are invisible.'
+config.diagnostics['missing-global-doc']    = -- TODO: need translate!
+'Missing documentation for globals.'
+config.diagnostics['missing-param-doc']     = -- TODO: need translate!
+'Missing @param annotation.'
+config.diagnostics['missing-return-doc']    = -- TODO: need translate!
+'Missing @return annotation.'
 config.diagnostics['missing-parameter']     = -- TODO: need translate!
 'Enable diagnostics for function calls where the number of arguments is less than the number of annotated function parameters.'
 config.diagnostics['missing-return']        = -- TODO: need translate!
