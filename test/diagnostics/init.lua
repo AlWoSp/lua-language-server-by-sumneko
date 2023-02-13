@@ -49,5 +49,6 @@ function TEST(script, ...)
     files.remove(TESTURI)
 end
 
-require 'diagnostics.common'
-require 'diagnostics.type-check'
+-- require 'diagnostics.common'
+-- require 'diagnostics.type-check'
+require 'diagnostics.global-element'

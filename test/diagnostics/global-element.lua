@@ -1,8 +1,6 @@
 local config = require 'config'
 local util   = require 'utility'
 
-local disables = config.get(nil, 'Lua.diagnostics.groupFileStatus')
-
 -- disable all default groups to make isolated tests
 config.set(nil, 'Lua.diagnostics.groupFileStatus', 
 {
@@ -67,12 +65,12 @@ config.set(nil, 'Lua.diagnostics.globals',
 
 TEST [[
 GLOBAL1 = "allowed"
-global2 = "also allowed"
+<!global2!> = "not allowed"
 <!GLOBAL3!> = "not allowed"
 ]]
 
 TEST [[
-function global1()
+function GLOBAL1()
     print()
 end
 ]]
@@ -85,7 +83,15 @@ end
 
 function GLOBAL_CLOSURE()
     local elem1 = 1
-    global2 = 2
+    GLOBAL2 = 2
     <!elem2!> = 2
 end
 ]]
+
+-- reset configurations
+config.set(nil, 'Lua.diagnostics.groupFileStatus', 
+{})
+config.set(nil, 'Lua.diagnostics.neededFileStatus',
+{})
+config.set(nil, 'Lua.diagnostics.globals',
+{})
