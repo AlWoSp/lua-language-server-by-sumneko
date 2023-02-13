@@ -36,33 +36,56 @@ x = 321
 ]]
 
 TEST [[
-    -- functions
+local function test1()
+    print()
+end
+
+function <!Test2!>()
+    print()
+end
 ]]
 
 TEST [[
-    -- closures
+local function closure1()
+    local elem1 = 1
+    <!elem2!> = 2
+end
+
+function <!Closure2!>()
+    local elem1 = 1
+    <!elem2!> = 2
+end
 ]]
-
-
-
 
 -- add elements to exemption list
 config.set(nil, 'Lua.diagnostics.globals',
 {
     'GLOBAL1',
-    'GLOBAL2'
+    'GLOBAL2',
+    'GLOBAL_CLOSURE'
 })
 
 TEST [[
-    -- variables
-    GLOBAL1 = "allowed"
-    <!GLOBAL3!> = "not allowed"
+GLOBAL1 = "allowed"
+global2 = "also allowed"
+<!GLOBAL3!> = "not allowed"
 ]]
 
 TEST [[
-    -- functions
+function global1()
+    print()
+end
 ]]
 
 TEST [[
-    -- closures
+local function closure1()
+    local elem1 = 1
+    GLOBAL1 = 2
+end
+
+function GLOBAL_CLOSURE()
+    local elem1 = 1
+    global2 = 2
+    <!elem2!> = 2
+end
 ]]
