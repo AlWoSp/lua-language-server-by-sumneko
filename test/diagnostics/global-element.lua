@@ -1,51 +1,40 @@
 local config = require 'config'
 local util   = require 'utility'
 
- -- disable all default groups to make isolated tests
-config.get(nil, 'Lua.diagnostics.groupFileStatus')['ambiguity']     = 'None'
-config.get(nil, 'Lua.diagnostics.groupFileStatus')['await']         = 'None'
-config.get(nil, 'Lua.diagnostics.groupFileStatus')['codestyle']     = 'None'
-config.get(nil, 'Lua.diagnostics.groupFileStatus')['duplicate']     = 'None'
-config.get(nil, 'Lua.diagnostics.groupFileStatus')['global']        = 'None'
-config.get(nil, 'Lua.diagnostics.groupFileStatus')['luadoc']        = 'None'
-config.get(nil, 'Lua.diagnostics.groupFileStatus')['redefined']     = 'None'
-config.get(nil, 'Lua.diagnostics.groupFileStatus')['strict']        = 'None'
-config.get(nil, 'Lua.diagnostics.groupFileStatus')['strong']        = 'None'
-config.get(nil, 'Lua.diagnostics.groupFileStatus')['type-check']    = 'None'
-config.get(nil, 'Lua.diagnostics.groupFileStatus')['unbalanced']    = 'None'
-config.get(nil, 'Lua.diagnostics.groupFileStatus')['unused']        = 'None' 
+local disables = config.get(nil, 'Lua.diagnostics.groupFileStatus')
 
 -- disable all default groups to make isolated tests
-config.set(nil, 'Lua.diagnostics.groupFileStatus', {['ambiguity']     = 'None'})
-config.set(nil, 'Lua.diagnostics.groupFileStatus', {['await']         = 'None'})
-config.set(nil, 'Lua.diagnostics.groupFileStatus', {['codestyle']     = 'None'})
-config.set(nil, 'Lua.diagnostics.groupFileStatus', {['duplicate']     = 'None'})
-config.set(nil, 'Lua.diagnostics.groupFileStatus', {['global']        = 'None'})
-config.set(nil, 'Lua.diagnostics.groupFileStatus', {['luadoc']        = 'None'})
-config.set(nil, 'Lua.diagnostics.groupFileStatus', {['redefined']     = 'None'})
-config.set(nil, 'Lua.diagnostics.groupFileStatus', {['strict']        = 'None'})
-config.set(nil, 'Lua.diagnostics.groupFileStatus', {['strong']        = 'None'})
-config.set(nil, 'Lua.diagnostics.groupFileStatus', {['type-check']    = 'None'})
-config.set(nil, 'Lua.diagnostics.groupFileStatus', {['unbalanced']    = 'None'})
-config.set(nil, 'Lua.diagnostics.groupFileStatus', {['unused']        = 'None'})
+config.set(nil, 'Lua.diagnostics.groupFileStatus', 
+{
+    ['ambiguity']     = 'None',
+    ['await']         = 'None',
+    ['codestyle']     = 'None',
+    ['conventions']   = 'None',
+    ['duplicate']     = 'None',
+    ['global']        = 'None',
+    ['luadoc']        = 'None',
+    ['redefined']     = 'None',
+    ['strict']        = 'None',
+    ['strong']        = 'None',
+    ['type-check']    = 'None',
+    ['unbalanced']    = 'None',
+    ['unused']        = 'None'
+})
 
--- have to enable global-element diagnostics
-config.set(nil, 'Lua.diagnostics.groupFileStatus', {["conventions"] = "Any"})
+-- enable single diagnostic that is to be tested
+config.set(nil, 'Lua.diagnostics.neededFileStatus',
+{
+    ['global-element'] = 'Any!' -- override groupFileStatus
+})
 
 -- check that local elements are not warned about
 TEST [[
----@diagnostic disable:unused-local
----@diagnostic disable:lowercase-global
-
----@diagnostic enable:global-element
-
 local x = 123
+x = 321
 <!Y!> = "global"
 <!z!> = "global"
 ]]
 
-    --<!Y!> = "global"
-    --<!z!> = "global"
 TEST [[
     -- functions
 ]]
@@ -58,8 +47,16 @@ TEST [[
 
 
 -- add elements to exemption list
+config.set(nil, 'Lua.diagnostics.globals',
+{
+    'GLOBAL1',
+    'GLOBAL2'
+})
+
 TEST [[
     -- variables
+    GLOBAL1 = "allowed"
+    <!GLOBAL3!> = "not allowed"
 ]]
 
 TEST [[
