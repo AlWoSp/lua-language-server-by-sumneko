@@ -26,7 +26,7 @@ return function (uri, callback)
 
 
 
-    guide.eachSourceType(ast.ast, 'setglobal', function (source)
+    guide.eachSourceType(ast.ast, 'local', function (source)
         local name = guide.getKeyName(source)
         if not name then
             return
