@@ -155,7 +155,7 @@ m.register {
 
 m.register {
     'undefined-global',
-    'global-in-nil-env'
+    'global-in-nil-env',
 } {
     group    = 'global',
     severity = 'Warning',
