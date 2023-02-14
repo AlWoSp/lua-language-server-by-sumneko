@@ -413,8 +413,10 @@ config.diagnostics['unknown-operator']      =
 'Enable diagnostics for unknown operators.'
 config.diagnostics['unreachable-code']      =
 'Enable diagnostics for unreachable code.'
-config.diagnostics['global-element']       =
+config.diagnostics['global-element']        =
 'Enable diagnostics to warn about global variables.'
+config.diagnostics['uppercase-local']       =
+'Enable uppercase local variable definition diagnostics.'
 config.typeFormat.config                    =
 'Configures the formatting behavior while typing Lua code.'
 config.typeFormat.config.auto_complete_end  =
