@@ -179,7 +179,7 @@ WORKSPACE_DIAGNOSTIC      =
 WORKSPACE_SKIP_HUGE_FILE  =
 'For performance reasons, the parsing of this file has been stopped: {}'
 WORKSPACE_NOT_ALLOWED     =
-'Your workspace is set to `{}`. Lua language server refused to load this directory. Please check your configuration.[learn more here](https://github.com/sumneko/lua-language-server/wiki/FAQ#why-is-the-server-scanning-the-wrong-folder)'
+'Your workspace is set to `{}`. Lua language server refused to load this directory. Please check your configuration.[learn more here](https://github.com/LuaLS/lua-language-server/wiki/FAQ#why-is-the-server-scanning-the-wrong-folder)'
 WORKSPACE_SCAN_TOO_MUCH   =
 'More than {} files have been scanned. The current scanned directory is `{}`. Please confirm whether the configuration is correct.'
 
@@ -281,6 +281,10 @@ PARSER_AMBIGUOUS_SYNTAX   = -- TODO: need translate!
 'In Lua 5.1, the left brackets called by the function must be in the same line as the function.'
 PARSER_NEED_PAREN         = -- TODO: need translate!
 'Need to add a pair of parentheses.'
+PARSER_NESTING_LONG_MARK  =
+'Nesting of `[[...]]` is not allowed in Lua 5.1 .'
+PARSER_LOCAL_LIMIT        =
+'Only 200 active local variables and upvalues can be existed at the same time.'
 PARSER_LUADOC_MISS_CLASS_NAME           =
 '<class name> expected.'
 PARSER_LUADOC_MISS_EXTENDS_SYMBOL       =
@@ -528,7 +532,7 @@ WINDOW_APPLY_SETTING             =
 WINDOW_CHECK_SEMANTIC            =
 'If you are using the color theme in the market, you may need to modify `editor.semanticHighlighting.enabled` to `true` to make semantic tokens take effect.'
 WINDOW_TELEMETRY_HINT            =
-'Please allow sending anonymous usage data and error reports to help us further improve this extension. Read our privacy policy [here](https://github.com/sumneko/lua-language-server/wiki/Home#privacy) .'
+'Please allow sending anonymous usage data and error reports to help us further improve this extension. Read our privacy policy [here](https://github.com/LuaLS/lua-language-server/wiki/Home#privacy) .'
 WINDOW_TELEMETRY_ENABLE          =
 'Allow'
 WINDOW_TELEMETRY_DISABLE         =
@@ -568,6 +572,22 @@ CONFIG_TYPE_ERROR                =
 'The setting file must be in lua or json format: {}'
 CONFIG_MODIFY_FAIL_SYNTAX_ERROR  =
 'Failed to modify settings, there are syntax errors in the settings file: {}'
+CONFIG_MODIFY_FAIL_NO_WORKSPACE  =
+[[
+Failed to modify settings:
+* The current mode is single-file mode, server cannot create `.luarc.json` without workspace.
+* The language client dose not support modifying settings from the server side.
+
+Please modify following settings manually:
+{}
+]]
+CONFIG_MODIFY_FAIL               =
+[[
+Failed to modify settings
+
+Please modify following settings manually:
+{}
+]]
 
 PLUGIN_RUNTIME_ERROR             =
 [[
@@ -602,6 +622,14 @@ CLI_CHECK_SUCCESS =
 'Diagnosis completed, no problems found'
 CLI_CHECK_RESULTS =
 'Diagnosis complete, {} problems found, see {}'
+CLI_DOC_INITING   =
+'Loading documents ...'
+CLI_DOC_DONE      =
+[[
+Document exporting completed!
+Raw data: {}
+Markdown(example): {}
+]]
 
 TYPE_ERROR_ENUM_GLOBAL_DISMATCH =
 'Type `{child}` cannot match enumeration type of `{parent}`'
@@ -649,7 +677,7 @@ Defines a class/table structure
 Manager = {}
 ```
 ---
-[View Wiki](https://github.com/sumneko/lua-language-server/wiki/Annotations#class)
+[View Wiki](https://github.com/LuaLS/lua-language-server/wiki/Annotations#class)
 ]=]
 LUADOC_DESC_TYPE =
 [=[
@@ -700,7 +728,7 @@ local x --x[""] is true
 local myFunction
 ```
 ---
-[View Wiki](https://github.com/sumneko/lua-language-server/wiki/Annotations#types-and-type)
+[View Wiki](https://github.com/LuaLS/lua-language-server/wiki/Annotations#types-and-type)
 ]=]
 LUADOC_DESC_ALIAS =
 [=[
@@ -750,7 +778,7 @@ local enums = {
 ---| `enums.CLOSE`
 ```
 ---
-[View Wiki](https://github.com/sumneko/lua-language-server/wiki/Annotations#alias)
+[View Wiki](https://github.com/LuaLS/lua-language-server/wiki/Annotations#alias)
 ]=]
 LUADOC_DESC_PARAM =
 [=[
@@ -775,7 +803,7 @@ function get(url, headers, timeout) end
 function concat(base, ...) end
 ```
 ---
-[View Wiki](https://github.com/sumneko/lua-language-server/wiki/Annotations#param)
+[View Wiki](https://github.com/LuaLS/lua-language-server/wiki/Annotations#param)
 ]=]
 LUADOC_DESC_RETURN =
 [=[
@@ -813,7 +841,7 @@ function getFirstLast() end
 function getTags(item) end
 ```
 ---
-[View Wiki](https://github.com/sumneko/lua-language-server/wiki/Annotations#return)
+[View Wiki](https://github.com/LuaLS/lua-language-server/wiki/Annotations#return)
 ]=]
 LUADOC_DESC_FIELD =
 [=[
@@ -844,7 +872,7 @@ response = get("localhost")
 statusCode = response.status.code
 ```
 ---
-[View Wiki](https://github.com/sumneko/lua-language-server/wiki/Annotations#field)
+[View Wiki](https://github.com/LuaLS/lua-language-server/wiki/Annotations#field)
 ]=]
 LUADOC_DESC_GENERIC =
 [=[
@@ -901,7 +929,7 @@ local v = Generic("Foo") -- v is an object of Foo
 -- we give for key (K) or value (V)
 ```
 ---
-[View Wiki](https://github.com/sumneko/lua-language-server/wiki/Annotations#generics-and-generic)
+[View Wiki](https://github.com/LuaLS/lua-language-server/wiki/Annotations#generics-and-generic)
 ]=]
 LUADOC_DESC_VARARG =
 [=[
@@ -920,7 +948,7 @@ provide typing or allow descriptions.
 function concat(...) end
 ```
 ---
-[View Wiki](https://github.com/sumneko/lua-language-server/wiki/Annotations#vararg)
+[View Wiki](https://github.com/LuaLS/lua-language-server/wiki/Annotations#vararg)
 ]=]
 LUADOC_DESC_OVERLOAD =
 [=[
@@ -935,7 +963,7 @@ Allows defining of multiple function signatures.
 function table.insert(t, position, value) end
 ```
 ---
-[View Wiki](https://github.com/sumneko/lua-language-server/wiki/Annotations#overload)
+[View Wiki](https://github.com/LuaLS/lua-language-server/wiki/Annotations#overload)
 ]=]
 LUADOC_DESC_DEPRECATED =
 [=[
@@ -946,7 +974,7 @@ being ~~struck through~~.
 `---@deprecated`
 
 ---
-[View Wiki](https://github.com/sumneko/lua-language-server/wiki/Annotations#deprecated)
+[View Wiki](https://github.com/LuaLS/lua-language-server/wiki/Annotations#deprecated)
 ]=]
 LUADOC_DESC_META =
 [=[
@@ -961,7 +989,7 @@ There are 3 main distinctions to note with meta files:
 `---@meta`
 
 ---
-[View Wiki](https://github.com/sumneko/lua-language-server/wiki/Annotations#meta)
+[View Wiki](https://github.com/LuaLS/lua-language-server/wiki/Annotations#meta)
 ]=]
 LUADOC_DESC_VERSION =
 [=[
@@ -986,7 +1014,7 @@ function onlyWorksInJIT() end
 function oldLuaOnly() end
 ```
 ---
-[View Wiki](https://github.com/sumneko/lua-language-server/wiki/Annotations#version)
+[View Wiki](https://github.com/LuaLS/lua-language-server/wiki/Annotations#version)
 ]=]
 LUADOC_DESC_SEE =
 [=[
@@ -996,7 +1024,7 @@ Define something that can be viewed for more information
 `---@see <text>`
 
 ---
-[View Wiki](https://github.com/sumneko/lua-language-server/wiki/Annotations#see)
+[View Wiki](https://github.com/LuaLS/lua-language-server/wiki/Annotations#see)
 ]=]
 LUADOC_DESC_DIAGNOSTIC =
 [=[
@@ -1004,7 +1032,7 @@ Enable/disable diagnostics for error/warnings/etc.
 
 Actions: `disable`, `enable`, `disable-line`, `disable-next-line`
 
-[Names](https://github.com/sumneko/lua-language-server/blob/cbb6e6224094c4eb874ea192c5f85a6cba099588/script/proto/define.lua#L54)
+[Names](https://github.com/LuaLS/lua-language-server/blob/cbb6e6224094c4eb874ea192c5f85a6cba099588/script/proto/define.lua#L54)
 
 ## Syntax
 `---@diagnostic <action>[: <name>]`
@@ -1022,7 +1050,7 @@ local unused = "hello world"
 ---@diagnostic enable: unused-local
 ```
 ---
-[View Wiki](https://github.com/sumneko/lua-language-server/wiki/Annotations#diagnostic)
+[View Wiki](https://github.com/LuaLS/lua-language-server/wiki/Annotations#diagnostic)
 ]=]
 LUADOC_DESC_MODULE =
 [=[
@@ -1039,7 +1067,7 @@ local stringUtils
 local module = require('string.utils')
 ```
 ---
-[View Wiki](https://github.com/sumneko/lua-language-server/wiki/Annotations#module)
+[View Wiki](https://github.com/LuaLS/lua-language-server/wiki/Annotations#module)
 ]=]
 LUADOC_DESC_ASYNC =
 [=[
@@ -1049,7 +1077,7 @@ Marks a function as asynchronous.
 `---@async`
 
 ---
-[View Wiki](https://github.com/sumneko/lua-language-server/wiki/Annotations#async)
+[View Wiki](https://github.com/LuaLS/lua-language-server/wiki/Annotations#async)
 ]=]
 LUADOC_DESC_NODISCARD =
 [=[
@@ -1061,7 +1089,7 @@ be ignored.
 `---@nodiscard`
 
 ---
-[View Wiki](https://github.com/sumneko/lua-language-server/wiki/Annotations#nodiscard)
+[View Wiki](https://github.com/LuaLS/lua-language-server/wiki/Annotations#nodiscard)
 ]=]
 LUADOC_DESC_CAST =
 [=[
@@ -1096,7 +1124,7 @@ local x --> string|table
 print(x) --> table
 ```
 ---
-[View Wiki](https://github.com/sumneko/lua-language-server/wiki/Annotations#cast)
+[View Wiki](https://github.com/LuaLS/lua-language-server/wiki/Annotations#cast)
 ]=]
 LUADOC_DESC_OPERATOR =
 [=[
@@ -1126,12 +1154,12 @@ pA = Passcode.new(1234)
 pB = -pA
 --> integer
 ```
-[View Request](https://github.com/sumneko/lua-language-server/issues/599)
+[View Request](https://github.com/LuaLS/lua-language-server/issues/599)
 ]=]
 LUADOC_DESC_ENUM =
 [=[
 Mark a table as an enum. If you want an enum but can't define it as a Lua
-table, take a look at the [`@alias`](https://github.com/sumneko/lua-language-server/wiki/Annotations#alias)
+table, take a look at the [`@alias`](https://github.com/LuaLS/lua-language-server/wiki/Annotations#alias)
 tag.
 
 ## Syntax

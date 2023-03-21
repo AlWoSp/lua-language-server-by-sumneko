@@ -1,3 +1,19 @@
+# codeLens.enable
+
+Enable code lens.
+
+## type
+
+```ts
+boolean
+```
+
+## default
+
+```jsonc
+false
+```
+
 # completion.autoRequire
 
 When the input looks like a file name, automatically `require` this file.
@@ -272,6 +288,7 @@ Array<string>
 * ``"missing-return-value"``
 * ``"need-check-nil"``
 * ``"need-paren"``
+* ``"nesting-long-mark"``
 * ``"newfield-call"``
 * ``"newline-call"``
 * ``"no-unknown"``
@@ -1561,7 +1578,7 @@ string
 
 # misc.parameters
 
-[Command line parameters](https://github.com/sumneko/lua-telemetry-server/tree/master/method) when starting the language service in VSCode.
+[Command line parameters](https://github.com/LuaLS/lua-telemetry-server/tree/master/method) when starting the language service in VSCode.
 
 ## type
 
@@ -1736,7 +1753,7 @@ false
 
 # runtime.plugin
 
-Plugin path. Please read [wiki](https://github.com/sumneko/lua-language-server/wiki/Plugins) to learn more.
+Plugin path. Please read [wiki](https://github.com/LuaLS/lua-language-server/wiki/Plugins) to learn more.
 
 ## type
 
@@ -1923,23 +1940,6 @@ Array<string>
 
 ```jsonc
 []
-```
-
-# telemetry.enable
-
-Enable telemetry to send your editor information and error logs over the network. Read our privacy policy [here](https://github.com/sumneko/lua-language-server/wiki/Home#privacy).
-
-
-## type
-
-```ts
-boolean | null
-```
-
-## default
-
-```jsonc
-null
 ```
 
 # type.castNumberToInteger
@@ -2161,22 +2161,6 @@ integer
 500
 ```
 
-# workspace.supportScheme
-
-Provide language server for the Lua files of the following scheme.
-
-## type
-
-```ts
-Array<string>
-```
-
-## default
-
-```jsonc
-["file","untitled","git"]
-```
-
 # workspace.useGitIgnore
 
 Ignore files list in `.gitignore` .
@@ -2195,7 +2179,7 @@ true
 
 # workspace.userThirdParty
 
-Add private third-party library configuration file paths here, please refer to the built-in [configuration file path](https://github.com/sumneko/lua-language-server/tree/master/meta/3rd)
+Add private third-party library configuration file paths here, please refer to the built-in [configuration file path](https://github.com/LuaLS/lua-language-server/tree/master/meta/3rd)
 
 ## type
 

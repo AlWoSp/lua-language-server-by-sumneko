@@ -1,9 +1,13 @@
 local util  = require 'utility'
 local scope = require 'workspace.scope'
 local guide = require 'parser.guide'
-local files = require 'files'
 ---@class vm
 local vm    = require 'vm.vm'
+
+---@type table<string, vm.global>
+local allGlobals = {}
+---@type table<uri, table<string, boolean>>
+local globalSubs = util.multiTable(2)
 
 ---@class parser.object
 ---@field package _globalBase parser.object
@@ -11,8 +15,8 @@ local vm    = require 'vm.vm'
 ---@field global vm.global
 
 ---@class vm.global.link
----@field sets   parser.object[]
----@field hasGet boolean?
+---@field sets parser.object[]
+---@field gets parser.object[]
 
 ---@class vm.global
 ---@field links table<uri, vm.global.link>
@@ -27,17 +31,15 @@ mt.name = ''
 ---@param source parser.object
 function mt:addSet(uri, source)
     local link = self.links[uri]
-    if not link.sets then
-        link.sets = {}
-    end
     link.sets[#link.sets+1] = source
     self.setsCache = nil
 end
 
 ---@param uri    uri
-function mt:addGet(uri)
+---@param source parser.object
+function mt:addGet(uri, source)
     local link = self.links[uri]
-    link.hasGet = true
+    link.gets[#link.gets+1] = source
 end
 
 ---@param suri uri
@@ -117,9 +119,37 @@ function mt:getKeyName()
     return self.name:match('[^' .. vm.ID_SPLITE .. ']+$')
 end
 
+---@return string?
+function mt:getFieldName()
+    return self.name:match(vm.ID_SPLITE .. '(.-)$')
+end
+
 ---@return boolean
 function mt:isAlive()
     return next(self.links) ~= nil
+end
+
+---@param uri uri
+---@return parser.object?
+function mt:getParentBase(uri)
+    local parentID = self.name:match('^(.-)' .. vm.ID_SPLITE)
+    if not parentID then
+        return nil
+    end
+    local parentName = self.cate .. '|' .. parentID
+    local global = allGlobals[parentName]
+    if not global then
+        return nil
+    end
+    local link = global.links[uri]
+    if not link then
+        return nil
+    end
+    local luckyBoy = link.sets[1] or link.gets[1]
+    if not luckyBoy then
+        return nil
+    end
+    return vm.getGlobalBase(luckyBoy)
 end
 
 ---@param cate vm.global.cate
@@ -128,18 +158,18 @@ local function createGlobal(name, cate)
     return setmetatable({
         name  = name,
         cate  = cate,
-        links = util.multiTable(2),
+        links = util.multiTable(2, function ()
+            return {
+                sets = {},
+                gets = {},
+            }
+        end),
     }, mt)
 end
 
 ---@class parser.object
 ---@field package _globalNode vm.global|false
 ---@field package _enums?     parser.object[]
-
----@type table<string, vm.global>
-local allGlobals = {}
----@type table<uri, table<string, boolean>>
-local globalSubs = util.multiTable(2)
 
 local compileObject
 local compilerGlobalSwitch = util.switch()
@@ -183,7 +213,7 @@ local compilerGlobalSwitch = util.switch()
             return
         end
         local global = vm.declareGlobal('variable', name, uri)
-        global:addGet(uri)
+        global:addGet(uri, source)
         source._globalNode = global
 
         local nxt = source.next
@@ -241,7 +271,7 @@ local compilerGlobalSwitch = util.switch()
         end
         local uri    = guide.getUri(source)
         local global = vm.declareGlobal('variable', name, uri)
-        global:addGet(uri)
+        global:addGet(uri, source)
         source._globalNode = global
 
         local nxt = source.next
@@ -267,7 +297,7 @@ local compilerGlobalSwitch = util.switch()
                         global:addSet(uri, source)
                         source.value = source.args[3]
                     else
-                        global:addGet(uri)
+                        global:addGet(uri, source)
                     end
                     source._globalNode = global
 
@@ -366,7 +396,7 @@ local compilerGlobalSwitch = util.switch()
             return
         end
         local type = vm.declareGlobal('type', name, uri)
-        type:addGet(uri)
+        type:addGet(uri, source)
         source._globalNode = type
     end)
     : case 'doc.extends.name'
@@ -374,7 +404,7 @@ local compilerGlobalSwitch = util.switch()
         local uri  = guide.getUri(source)
         local name = source[1]
         local class = vm.declareGlobal('type', name, uri)
-        class:addGet(uri)
+        class:addGet(uri, source)
         source._globalNode = class
     end)
 
@@ -510,17 +540,40 @@ function vm.getEnums(source)
 end
 
 ---@param source parser.object
+---@return boolean
 function vm.compileByGlobal(source)
     local global = vm.getGlobalNode(source)
     if not global then
-        return
+        return false
+    end
+    vm.setNode(source, global)
+    if global.cate == 'variable' then
+        if guide.isAssign(source) then
+            if vm.bindDocs(source) then
+                return true
+            end
+            if source.value and source.value.type ~= 'nil' then
+                vm.setNode(source, vm.compileNode(source.value))
+                return true
+            end
+        else
+            if vm.bindAs(source) then
+                return true
+            end
+            local node = vm.traceNode(source)
+            if node then
+                vm.setNode(source, node, true)
+                return true
+            end
+        end
     end
     local globalBase = vm.getGlobalBase(source)
     if not globalBase then
-        return
+        return false
     end
     local globalNode = vm.compileNode(globalBase)
     vm.setNode(source, globalNode, true)
+    return true
 end
 
 ---@param source parser.object
@@ -544,47 +597,12 @@ function vm.getGlobalBase(source)
             type   = 'globalbase',
             parent = root,
             global = global,
+            start  = 0,
+            finish = 0,
         }
     end
     source._globalBase = root._globalBaseMap[name]
     return source._globalBase
-end
-
----@param source parser.object
-local function compileSelf(source)
-    if source.parent.type ~= 'funcargs' then
-        return
-    end
-    ---@type parser.object
-    local node = source.parent.parent and source.parent.parent.parent and source.parent.parent.parent.node
-    if not node then
-        return
-    end
-    local fields = vm.getVariableFields(source, false)
-    if not fields then
-        return
-    end
-    local nodeLocalID = vm.getVariableID(node)
-    local globalNode  = node._globalNode
-    if not nodeLocalID and not globalNode then
-        return
-    end
-    for _, field in ipairs(fields) do
-        if field.type == 'setfield' then
-            local key = guide.getKeyName(field)
-            if key then
-                if nodeLocalID then
-                    local myID = nodeLocalID .. vm.ID_SPLITE .. key
-                    vm.insertVariableID(myID, field)
-                end
-                if globalNode then
-                    local myID = globalNode:getName() .. vm.ID_SPLITE .. key
-                    local myGlobal = vm.declareGlobal('variable', myID, guide.getUri(node))
-                    myGlobal:addSet(guide.getUri(node), field)
-                end
-            end
-        end
-    end
 end
 
 ---@param source parser.object
@@ -609,18 +627,6 @@ local function compileAst(source)
     }, function (src)
         compileObject(src)
     end)
-
-    --[[
-    local mt
-    function mt:xxx()
-        self.a = 1
-    end
-
-    mt.a --> find this definition
-    ]]
-    guide.eachSourceType(source, 'self', function (src)
-        compileSelf(src)
-    end)
 end
 
 ---@param uri uri
@@ -638,18 +644,7 @@ local function dropUri(uri)
     end
 end
 
----@async
-files.watch(function (ev, uri)
-    if ev == 'update' then
-        dropUri(uri)
-    end
-    if ev == 'remove' then
-        dropUri(uri)
-    end
-    if ev == 'compile' then
-        local state = files.getLastState(uri)
-        if state then
-            compileAst(state.ast)
-        end
-    end
-end)
+return {
+    compileAst = compileAst,
+    dropUri    = dropUri,
+}

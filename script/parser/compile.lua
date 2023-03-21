@@ -118,6 +118,7 @@ local Specials = {
     ['assert']       = true,
     ['error']        = true,
     ['type']         = true,
+    ['os.exit']      = true,
 }
 
 local UnarySymbol = {
@@ -232,7 +233,7 @@ local ListFinishMap = {
     ['while']    = true,
 }
 
-local State, Lua, Line, LineOffset, Chunk, Tokens, Index, LastTokenFinish, Mode, LocalCount
+local State, Lua, Line, LineOffset, Chunk, Tokens, Index, LastTokenFinish, Mode, LocalCount, LocalLimited
 
 local LocalLimit = 200
 
@@ -430,6 +431,19 @@ local function resolveLongString(finishMark)
         local result = stringResult
             : gsub('\r\n?', '\n')
         stringResult = result
+    end
+    if finishMark == ']]' and State.version == 'Lua 5.1' then
+        local nestOffset = sfind(Lua, '[[', start, true)
+        if nestOffset and nestOffset < finishOffset then
+            fastForwardToken(nestOffset)
+            local nestStartPos = getPosition(nestOffset, 'left')
+            local nestFinishPos = getPosition(nestOffset + 1, 'right')
+            pushError {
+                type   = 'NESTING_LONG_MARK',
+                start  = nestStartPos,
+                finish = nestFinishPos,
+            }
+        end
     end
     fastForwardToken(finishOffset + #finishMark)
     if miss then
@@ -715,7 +729,8 @@ local function createLocal(obj, attrs)
         end
         locals[#locals+1] = obj
         LocalCount = LocalCount + 1
-        if LocalCount > LocalLimit then
+        if not LocalLimited and LocalCount > LocalLimit then
+            LocalLimited = true
             pushError {
                 type   = 'LOCAL_LIMIT',
                 start  = obj.start,
@@ -1365,12 +1380,24 @@ local function parseNumber()
     return result
 end
 
-local function isKeyWord(word)
+local function isKeyWord(word, nextToken)
     if KeyWord[word] then
         return true
     end
     if word == 'goto' then
-        return State.version ~= 'Lua 5.1'
+        if State.version == 'Lua 5.1' then
+            return false
+        end
+        if State.version == 'LuaJIT' then
+            if not nextToken then
+                return false
+            end
+            if CharMapWord[ssub(nextToken, 1, 1)] then
+                return true
+            end
+            return false
+        end
+        return true
     end
     return false
 end
@@ -1396,7 +1423,7 @@ local function parseName(asAction)
             finish = finishPos,
         }
     end
-    if isKeyWord(word) then
+    if isKeyWord(word, Tokens[Index + 1]) then
         pushError {
             type   = 'KEYWORD',
             start  = startPos,
@@ -1477,7 +1504,7 @@ local function parseExpList(mini)
                     break
                 end
                 local nextToken = peekWord()
-                if  isKeyWord(nextToken)
+                if  isKeyWord(nextToken, Tokens[Index + 2])
                 and nextToken ~= 'function'
                 and nextToken ~= 'true'
                 and nextToken ~= 'false'
@@ -1947,6 +1974,12 @@ local function parseSimple(node, funcName)
     and node.node == lastMethod then
         lastMethod = nil
     end
+    if node.type == 'call' then
+        if node.node.special == 'error'
+        or node.node.special == 'os.exit' then
+            node.hasExit = true
+        end
+    end
     if node == lastMethod then
         if funcName then
             lastMethod = nil
@@ -2209,7 +2242,7 @@ local function parseParams(params)
                     finish = getPosition(Tokens[Index] + #token - 1, 'right'),
                 }
             end
-            if isKeyWord(token) then
+            if isKeyWord(token, Tokens[Index + 3]) then
                 pushError {
                     type   = 'KEYWORD',
                     start  = getPosition(Tokens[Index], 'left'),
@@ -2239,8 +2272,6 @@ local function parseFunction(isLocal, isAction)
         },
     }
     Index = Index + 2
-    local LastLocalCount = LocalCount
-    LocalCount = 0
     skipSpace(true)
     local hasLeftParen = Tokens[Index + 1] == '('
     if not hasLeftParen then
@@ -2276,6 +2307,8 @@ local function parseFunction(isLocal, isAction)
             hasLeftParen = Tokens[Index + 1] == '('
         end
     end
+    local LastLocalCount = LocalCount
+    LocalCount = 0
     pushChunk(func)
     local params
     if func.name and func.name.type == 'getmethod' then
@@ -2338,7 +2371,16 @@ local function parseFunction(isLocal, isAction)
     return func
 end
 
-local function pushErrorNeedParen(source)
+local function checkNeedParen(source)
+    local token = Tokens[Index + 1]
+    if  token ~= '.'
+    and token ~= ':' then
+        return source
+    end
+    local exp = parseSimple(source, false)
+    if exp == source then
+        return exp
+    end
     pushError {
         type   = 'NEED_PAREN',
         start  = source.start,
@@ -2357,6 +2399,7 @@ local function pushErrorNeedParen(source)
             }
         }
     }
+    return exp
 end
 
 local function parseExpUnit()
@@ -2376,10 +2419,7 @@ local function parseExpUnit()
         if not table then
             return nil
         end
-        local exp = parseSimple(table, false)
-        if exp ~= table then
-            pushErrorNeedParen(table)
-        end
+        local exp = checkNeedParen(table)
         return exp
     end
 
@@ -2388,10 +2428,7 @@ local function parseExpUnit()
         if not string then
             return nil
         end
-        local exp = parseSimple(string, false)
-        if exp ~= string then
-            pushErrorNeedParen(string)
-        end
+        local exp = checkNeedParen(string)
         return exp
     end
 
@@ -2400,10 +2437,7 @@ local function parseExpUnit()
         if not string then
             return nil
         end
-        local exp = parseSimple(string, false)
-        if exp ~= string then
-            pushErrorNeedParen(string)
-        end
+        local exp = checkNeedParen(string)
         return exp
     end
 
@@ -2856,6 +2890,8 @@ local function compileExpAsAction(exp)
         local isLocal
         if exp.type == 'getlocal' and exp[1] == State.ENVMode then
             exp.special = nil
+            -- TODO: need + 1 at the end
+            LocalCount = LocalCount - 1
             local loc = createLocal(exp, parseLocalAttrs())
             loc.locPos = exp.start
             loc.effect = maxinteger
@@ -2870,14 +2906,14 @@ local function compileExpAsAction(exp)
     end
 
     if exp.type == 'call' then
-        if exp.node.special == 'error' then
+        if exp.hasExit then
             for i = #Chunk, 1, -1 do
                 local block = Chunk[i]
                 if block.type == 'ifblock'
                 or block.type == 'elseifblock'
                 or block.type == 'elseblock'
                 or block.type == 'function' then
-                    block.hasError = true
+                    block.hasExit = true
                     break
                 end
             end
@@ -3361,6 +3397,7 @@ local function parseFor()
         missName()
     end
     skipSpace()
+    local forStateVars
     -- for i =
     if expectAssign() then
         action.type = 'loop'
@@ -3375,6 +3412,9 @@ local function parseFor()
                 name = nameOrList[1]
             end
         end
+        -- for x in ... uses 4 variables
+        forStateVars = 3
+        LocalCount = LocalCount + forStateVars
         if name then
             local loc = createLocal(name)
             loc.parent    = action
@@ -3466,6 +3506,13 @@ local function parseFor()
             missExp()
         end
 
+        if State.version == 'Lua 5.4' then
+            forStateVars = 4
+        else
+            forStateVars = 3
+        end
+        LocalCount = LocalCount + forStateVars
+
         if list then
             local lastName  = list[#list]
             list.range  = lastName and lastName.range or inRight
@@ -3526,6 +3573,9 @@ local function parseFor()
 
     if action.locals then
         LocalCount = LocalCount - #action.locals
+    end
+    if forStateVars then
+        LocalCount = LocalCount - forStateVars
     end
 
     return action
@@ -3754,7 +3804,7 @@ function parseAction()
         return parseRepeat()
     end
 
-    if token == 'goto' and isKeyWord 'goto' then
+    if token == 'goto' and isKeyWord('goto', Tokens[Index + 3]) then
         return parseGoTo()
     end
 
@@ -3854,6 +3904,7 @@ local function initState(lua, version, options)
     LineOffset          = 1
     LastTokenFinish     = 0
     LocalCount          = 0
+    LocalLimited        = false
     Chunk               = {}
     Tokens              = tokens(lua)
     Index               = 1

@@ -179,7 +179,7 @@ WORKSPACE_DIAGNOSTIC      =
 WORKSPACE_SKIP_HUGE_FILE  =
 '出於效能考慮，已停止對此檔案解析：{}'
 WORKSPACE_NOT_ALLOWED     =
-'你的工作目錄被設定為了 `{}` ，Lua語言伺服拒絕載入此目錄，請檢查你的設定檔。[了解更多](https://github.com/sumneko/lua-language-server/wiki/FAQ#why-is-the-server-scanning-the-wrong-folder)'
+'你的工作目錄被設定為了 `{}` ，Lua語言伺服拒絕載入此目錄，請檢查你的設定檔。[了解更多](https://github.com/LuaLS/lua-language-server/wiki/FAQ#why-is-the-server-scanning-the-wrong-folder)'
 WORKSPACE_SCAN_TOO_MUCH   =
 '已掃描了超過 {} 個檔案，目前掃描的目錄為 `{}`，請確認設定檔是否正確。'
 
@@ -281,6 +281,10 @@ PARSER_AMBIGUOUS_SYNTAX   = -- TODO: need translate!
 '在 Lua 5.1 中，函数调用的左括号必须与函数在同一行。'
 PARSER_NEED_PAREN         = -- TODO: need translate!
 '需要添加一对括号。'
+PARSER_NESTING_LONG_MARK  = -- TODO: need translate!
+'Nesting of `[[...]]` is not allowed in Lua 5.1 .'
+PARSER_LOCAL_LIMIT        = -- TODO: need translate!
+'Only 200 active local variables and upvalues can be existed at the same time.'
 PARSER_LUADOC_MISS_CLASS_NAME           =
 '缺少類別名稱。'
 PARSER_LUADOC_MISS_EXTENDS_SYMBOL       =
@@ -528,7 +532,7 @@ WINDOW_APPLY_SETTING             =
 WINDOW_CHECK_SEMANTIC            =
 '如果你正在使用市場中的顏色主題，你可能需要同時修改 `editor.semanticHighlighting.enabled` 選項為 `true` 才會使語義著色生效。'
 WINDOW_TELEMETRY_HINT            =
-'請允許發送匿名的使用資料與錯誤報告，幫助我們進一步完善此延伸模組。在[此處](https://github.com/sumneko/lua-language-server/wiki/Home#privacy)閱讀我們的隱私聲明。'
+'請允許發送匿名的使用資料與錯誤報告，幫助我們進一步完善此延伸模組。在[此處](https://github.com/LuaLS/lua-language-server/wiki/Home#privacy)閱讀我們的隱私聲明。'
 WINDOW_TELEMETRY_ENABLE          =
 '允許'
 WINDOW_TELEMETRY_DISABLE         =
@@ -568,6 +572,22 @@ CONFIG_TYPE_ERROR                =
 '設定檔案必須是lua或json格式：{}'
 CONFIG_MODIFY_FAIL_SYNTAX_ERROR  = -- TODO: need translate!
 'Failed to modify settings, there are syntax errors in the settings file: {}'
+CONFIG_MODIFY_FAIL_NO_WORKSPACE  = -- TODO: need translate!
+[[
+Failed to modify settings:
+* The current mode is single-file mode, server cannot create `.luarc.json` without workspace.
+* The language client dose not support modifying settings from the server side.
+
+Please modify following settings manually:
+{}
+]]
+CONFIG_MODIFY_FAIL               = -- TODO: need translate!
+[[
+Failed to modify settings
+
+Please modify following settings manually:
+{}
+]]
 
 PLUGIN_RUNTIME_ERROR             =
 [[
@@ -602,6 +622,14 @@ CLI_CHECK_SUCCESS =
 '診斷完成，沒有發現問題'
 CLI_CHECK_RESULTS =
 '診斷完成，共有 {} 個問題，請查看 {}'
+CLI_DOC_INITING   = -- TODO: need translate!
+'Loading documents ...'
+CLI_DOC_DONE      = -- TODO: need translate!
+[[
+Document exporting completed!
+Raw data: {}
+Markdown(example): {}
+]]
 
 TYPE_ERROR_ENUM_GLOBAL_DISMATCH = -- TODO: need translate!
 'Type `{child}` cannot match enumeration type of `{parent}`'
@@ -649,7 +677,7 @@ LUADOC_DESC_CLASS =
 Manager = {}
 ```
 ---
-[檢視文件](https://github.com/sumneko/lua-language-server/wiki/Annotations#class)
+[檢視文件](https://github.com/LuaLS/lua-language-server/wiki/Annotations#class)
 ]=]
 LUADOC_DESC_TYPE =
 [=[
@@ -700,7 +728,7 @@ local x --x[""] is true
 local myFunction
 ```
 ---
-[檢視文件](https://github.com/sumneko/lua-language-server/wiki/Annotations#types-and-type)
+[檢視文件](https://github.com/LuaLS/lua-language-server/wiki/Annotations#types-and-type)
 ]=]
 LUADOC_DESC_ALIAS =
 [=[
@@ -750,7 +778,7 @@ local enums = {
 ---| `enums.CLOSE`
 ```
 ---
-[檢視文件](https://github.com/sumneko/lua-language-server/wiki/Annotations#alias)
+[檢視文件](https://github.com/LuaLS/lua-language-server/wiki/Annotations#alias)
 ]=]
 LUADOC_DESC_PARAM =
 [=[
@@ -775,7 +803,7 @@ function get(url, headers, timeout) end
 function concat(base, ...) end
 ```
 ---
-[檢視文件](https://github.com/sumneko/lua-language-server/wiki/Annotations#param)
+[檢視文件](https://github.com/LuaLS/lua-language-server/wiki/Annotations#param)
 ]=]
 LUADOC_DESC_RETURN =
 [=[
@@ -813,7 +841,7 @@ function getFirstLast() end
 function getTags(item) end
 ```
 ---
-[檢視文件](https://github.com/sumneko/lua-language-server/wiki/Annotations#return)
+[檢視文件](https://github.com/LuaLS/lua-language-server/wiki/Annotations#return)
 ]=]
 LUADOC_DESC_FIELD =
 [=[
@@ -842,7 +870,7 @@ response = get("localhost")
 statusCode = response.status.code
 ```
 ---
-[檢視文件](https://github.com/sumneko/lua-language-server/wiki/Annotations#field)
+[檢視文件](https://github.com/LuaLS/lua-language-server/wiki/Annotations#field)
 ]=]
 LUADOC_DESC_GENERIC =
 [=[
@@ -898,7 +926,7 @@ local v = Generic("Foo") -- v is an object of Foo
 -- we give for key (K) or value (V)
 ```
 ---
-[檢視文件](https://github.com/sumneko/lua-language-server/wiki/Annotations#generics-and-generic)
+[檢視文件](https://github.com/LuaLS/lua-language-server/wiki/Annotations#generics-and-generic)
 ]=]
 LUADOC_DESC_VARARG =
 [=[
@@ -916,7 +944,7 @@ LUADOC_DESC_VARARG =
 function concat(...) end
 ```
 ---
-[檢視文件](https://github.com/sumneko/lua-language-server/wiki/Annotations#vararg)
+[檢視文件](https://github.com/LuaLS/lua-language-server/wiki/Annotations#vararg)
 ]=]
 LUADOC_DESC_OVERLOAD =
 [=[
@@ -931,7 +959,7 @@ LUADOC_DESC_OVERLOAD =
 function table.insert(t, position, value) end
 ```
 ---
-[檢視文件](https://github.com/sumneko/lua-language-server/wiki/Annotations#overload)
+[檢視文件](https://github.com/LuaLS/lua-language-server/wiki/Annotations#overload)
 ]=]
 LUADOC_DESC_DEPRECATED =
 [=[
@@ -941,7 +969,7 @@ LUADOC_DESC_DEPRECATED =
 `---@deprecated`
 
 ---
-[檢視文件](https://github.com/sumneko/lua-language-server/wiki/Annotations#deprecated)
+[檢視文件](https://github.com/LuaLS/lua-language-server/wiki/Annotations#deprecated)
 ]=]
 LUADOC_DESC_META =
 [=[
@@ -956,7 +984,7 @@ LUADOC_DESC_META =
 `---@meta`
 
 ---
-[檢視文件](https://github.com/sumneko/lua-language-server/wiki/Annotations#meta)
+[檢視文件](https://github.com/LuaLS/lua-language-server/wiki/Annotations#meta)
 ]=]
 LUADOC_DESC_VERSION =
 [=[
@@ -981,7 +1009,7 @@ function onlyWorksInJIT() end
 function oldLuaOnly() end
 ```
 ---
-[檢視文件](https://github.com/sumneko/lua-language-server/wiki/Annotations#version)
+[檢視文件](https://github.com/LuaLS/lua-language-server/wiki/Annotations#version)
 ]=]
 LUADOC_DESC_SEE =
 [=[
@@ -991,7 +1019,7 @@ LUADOC_DESC_SEE =
 `---@see <text>`
 
 ---
-[檢視文件](https://github.com/sumneko/lua-language-server/wiki/Annotations#see)
+[檢視文件](https://github.com/LuaLS/lua-language-server/wiki/Annotations#see)
 ]=]
 LUADOC_DESC_DIAGNOSTIC =
 [=[
@@ -999,7 +1027,7 @@ LUADOC_DESC_DIAGNOSTIC =
 
 操作：`disable` 、 `enable` 、 `disable-line` 、 `disable-next-line`
 
-[名稱](https://github.com/sumneko/lua-language-server/blob/cbb6e6224094c4eb874ea192c5f85a6cba099588/script/proto/define.lua#L54)
+[名稱](https://github.com/LuaLS/lua-language-server/blob/cbb6e6224094c4eb874ea192c5f85a6cba099588/script/proto/define.lua#L54)
 
 ## 語法
 `---@diagnostic <action>[: <name>]`
@@ -1017,7 +1045,7 @@ local unused = "hello world"
 ---@diagnostic enable: unused-local
 ```
 ---
-[檢視文件](https://github.com/sumneko/lua-language-server/wiki/Annotations#diagnostic)
+[檢視文件](https://github.com/LuaLS/lua-language-server/wiki/Annotations#diagnostic)
 ]=]
 LUADOC_DESC_MODULE =
 [=[
@@ -1034,7 +1062,7 @@ local stringUtils
 local module = require('string.utils')
 ```
 ---
-[檢視文件](https://github.com/sumneko/lua-language-server/wiki/Annotations#module)
+[檢視文件](https://github.com/LuaLS/lua-language-server/wiki/Annotations#module)
 ]=]
 LUADOC_DESC_ASYNC =
 [=[
@@ -1044,7 +1072,7 @@ LUADOC_DESC_ASYNC =
 `---@async`
 
 ---
-[檢視文件](https://github.com/sumneko/lua-language-server/wiki/Annotations#async)
+[檢視文件](https://github.com/LuaLS/lua-language-server/wiki/Annotations#async)
 ]=]
 LUADOC_DESC_NODISCARD =
 [=[
@@ -1055,7 +1083,7 @@ LUADOC_DESC_NODISCARD =
 `---@nodiscard`
 
 ---
-[檢視文件](https://github.com/sumneko/lua-language-server/wiki/Annotations#nodiscard)
+[檢視文件](https://github.com/LuaLS/lua-language-server/wiki/Annotations#nodiscard)
 ]=]
 LUADOC_DESC_CAST =
 [=[
@@ -1090,7 +1118,7 @@ local x --> string|table
 print(x) --> table
 ```
 ---
-[檢視文件](https://github.com/sumneko/lua-language-server/wiki/Annotations#cast)
+[檢視文件](https://github.com/LuaLS/lua-language-server/wiki/Annotations#cast)
 ]=]
 LUADOC_DESC_OPERATOR = -- TODO: need translate!
 [=[
@@ -1120,12 +1148,12 @@ pA = Passcode.new(1234)
 pB = -pA
 --> integer
 ```
-[View Request](https://github.com/sumneko/lua-language-server/issues/599)
+[View Request](https://github.com/LuaLS/lua-language-server/issues/599)
 ]=]
 LUADOC_DESC_ENUM = -- TODO: need translate!
 [=[
 Mark a table as an enum. If you want an enum but can't define it as a Lua
-table, take a look at the [`@alias`](https://github.com/sumneko/lua-language-server/wiki/Annotations#alias)
+table, take a look at the [`@alias`](https://github.com/LuaLS/lua-language-server/wiki/Annotations#alias)
 tag.
 
 ## Syntax

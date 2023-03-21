@@ -1,3 +1,19 @@
+# codeLens.enable
+
+Enable code lens.
+
+## type
+
+```ts
+boolean
+```
+
+## default
+
+```jsonc
+false
+```
+
 # completion.autoRequire
 
 輸入內容看起來是個檔名時，自動 `require` 此檔案。
@@ -272,6 +288,7 @@ Array<string>
 * ``"missing-return-value"``
 * ``"need-check-nil"``
 * ``"need-paren"``
+* ``"nesting-long-mark"``
 * ``"newfield-call"``
 * ``"newline-call"``
 * ``"no-unknown"``
@@ -1560,7 +1577,7 @@ string
 
 # misc.parameters
 
-VSCode中啟動語言伺服時的[命令列參數](https://github.com/sumneko/lua-language-server/wiki/Getting-Started#arguments)。
+VSCode中啟動語言伺服時的[命令列參數](https://github.com/LuaLS/lua-language-server/wiki/Getting-Started#arguments)。
 
 ## type
 
@@ -1735,7 +1752,7 @@ false
 
 # runtime.plugin
 
-延伸模組路徑，請查閱[文件](https://github.com/sumneko/lua-language-server/wiki/Plugins)瞭解用法。
+延伸模組路徑，請查閱[文件](https://github.com/LuaLS/lua-language-server/wiki/Plugins)瞭解用法。
 
 ## type
 
@@ -1922,23 +1939,6 @@ Array<string>
 
 ```jsonc
 []
-```
-
-# telemetry.enable
-
-啟用遙測，透過網路發送你的編輯器資訊與錯誤日誌。在[此處](https://github.com/sumneko/lua-language-server/wiki/Home#privacy)閱讀我們的隱私聲明。
-
-
-## type
-
-```ts
-boolean | null
-```
-
-## default
-
-```jsonc
-null
 ```
 
 # type.castNumberToInteger
@@ -2160,22 +2160,6 @@ integer
 500
 ```
 
-# workspace.supportScheme
-
-為以下 `scheme` 的lua檔案提供語言伺服。
-
-## type
-
-```ts
-Array<string>
-```
-
-## default
-
-```jsonc
-["file","untitled","git"]
-```
-
 # workspace.useGitIgnore
 
 忽略 `.gitignore` 中列舉的檔案。
@@ -2194,7 +2178,7 @@ true
 
 # workspace.userThirdParty
 
-在這裡添加私有的第三方庫適應檔案路徑，請參考內建的[組態檔案路徑](https://github.com/sumneko/lua-language-server/tree/master/meta/3rd)
+在這裡添加私有的第三方庫適應檔案路徑，請參考內建的[組態檔案路徑](https://github.com/LuaLS/lua-language-server/tree/master/meta/3rd)
 
 ## type
 

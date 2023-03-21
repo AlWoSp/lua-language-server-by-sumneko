@@ -7,10 +7,15 @@ local util      = require 'utility'
 ---@field package _tracer? vm.tracer
 ---@field package _casts?  parser.object[]
 
+---@alias tracer.mode 'local' | 'global'
+
 ---@class vm.tracer
----@field source    parser.object
----@field assigns   parser.object[]
+---@field mode      tracer.mode
+---@field name      string
+---@field source    parser.object | vm.variable
+---@field assigns   (parser.object | vm.variable)[]
 ---@field assignMap table<parser.object, true>
+---@field getMap    table<parser.object, true>
 ---@field careMap   table<parser.object, true>
 ---@field mark      table<parser.object, true>
 ---@field casts     parser.object[]
@@ -20,15 +25,16 @@ local util      = require 'utility'
 ---@field castIndex integer?
 local mt = {}
 mt.__index = mt
+mt.fastCalc    = true
 
 ---@return parser.object[]
 function mt:getCasts()
-    local root = guide.getRoot(self.source)
+    local root = guide.getRoot(self.main)
     if not root._casts then
         root._casts = {}
         local docs = root.docs
         for _, doc in ipairs(docs) do
-            if doc.type == 'doc.cast' and doc.loc then
+            if doc.type == 'doc.cast' and doc.name then
                 root._casts[#root._casts+1] = doc
             end
         end
@@ -64,43 +70,104 @@ function mt:collectCare(obj)
         if obj == self.main then
             return
         end
+        if not obj then
+            return
+        end
         self.careMap[obj] = true
+
+        if self.fastCalc then
+            if obj.type == 'if'
+            or obj.type == 'while'
+            or obj.type == 'binary' then
+                self.fastCalc = false
+            end
+            if obj.type == 'call' and obj.node then
+                if obj.node.special == 'assert'
+                or obj.node.special == 'type' then
+                    self.fastCalc = false
+                end
+            end
+        end
+
         obj = obj.parent
     end
 end
 
 function mt:collectLocal()
-    local startPos  = self.source.start
+    local startPos  = self.source.base.start
     local finishPos = 0
 
-    self.assigns[#self.assigns+1] = self.source
-    self.assignMap[self.source] = true
+    local variable = self.source
 
-    for _, obj in ipairs(self.source.ref) do
-        if obj.type == 'setlocal' then
-            self.assigns[#self.assigns+1] = obj
-            self.assignMap[obj] = true
-            self:collectCare(obj)
-            if obj.finish > finishPos then
-                finishPos = obj.finish
-            end
+    if  variable.base.type ~= 'local'
+    and variable.base.type ~= 'self' then
+        self.assigns[#self.assigns+1] = variable
+        self.assignMap[self.source] = true
+    end
+
+    for _, set in ipairs(variable.sets) do
+        self.assigns[#self.assigns+1] = set
+        self.assignMap[set] = true
+        self:collectCare(set)
+        if set.finish > finishPos then
+            finishPos = set.finish
         end
-        if obj.type == 'getlocal' then
-            self:collectCare(obj)
-            if obj.finish > finishPos then
-                finishPos = obj.finish
-            end
+    end
+
+    for _, get in ipairs(variable.gets) do
+        self:collectCare(get)
+        self.getMap[get] = true
+        if get.finish > finishPos then
+            finishPos = get.finish
         end
     end
 
     local casts = self:getCasts()
     for _, cast in ipairs(casts) do
-        if  cast.loc[1] == self.source[1]
+        if  cast.name[1] == self.name
         and cast.start  > startPos
         and cast.finish < finishPos
-        and guide.getLocal(self.source, self.source[1], cast.start) == self.source then
+        and vm.getCastTargetHead(cast) == variable.base then
             self.casts[#self.casts+1] = cast
         end
+    end
+
+    if #self.casts > 0 then
+        self.fastCalc = false
+    end
+end
+
+function mt:collectGlobal()
+    self.assigns[#self.assigns+1] = self.source
+    self.assignMap[self.source] = true
+
+    local uri    = guide.getUri(self.source)
+    local global = self.source.global
+    local link   = global.links[uri]
+
+    for _, set in ipairs(link.sets) do
+        self.assigns[#self.assigns+1] = set
+        self.assignMap[set] = true
+        self:collectCare(set)
+    end
+
+    for _, get in ipairs(link.gets) do
+        self:collectCare(get)
+        self.getMap[get] = true
+    end
+
+    local casts = self:getCasts()
+    for _, cast in ipairs(casts) do
+        if cast.name[1] == self.name then
+            local castTarget = vm.getCastTargetHead(cast)
+            if castTarget and castTarget.type == 'global' then
+                self.casts[#self.casts+1] = cast
+            end
+        end
+    end
+
+    if #self.casts > 0 then
+        self.fastCalc = false
     end
 end
 
@@ -108,25 +175,33 @@ end
 ---@param finish integer
 ---@return parser.object?
 function mt:getLastAssign(start, finish)
-    local assign
-    for _, obj in ipairs(self.assigns) do
+    local lastAssign
+    for _, assign in ipairs(self.assigns) do
+        local obj
+        if assign.type == 'variable' then
+            ---@cast assign vm.variable
+            obj = assign.base
+        else
+            ---@cast assign parser.object
+            obj = assign
+        end
         if obj.start < start then
             goto CONTINUE
         end
-        if (obj.range or obj.start) >= finish then
+        if (obj.effect or obj.range or obj.start) >= finish then
             break
         end
-        local objBlock = guide.getParentBlock(obj)
+        local objBlock = guide.getTopBlock(obj)
         if not objBlock then
             break
         end
         if  objBlock.start  <= finish
         and objBlock.finish >= finish then
-            assign = obj
+            lastAssign = obj
         end
         ::CONTINUE::
     end
-    return assign
+    return lastAssign
 end
 
 ---@param pos integer
@@ -183,12 +258,13 @@ end
 
 local lookIntoChild = util.switch()
     : case 'getlocal'
+    : case 'getglobal'
     ---@param tracer   vm.tracer
     ---@param action   parser.object
     ---@param topNode  vm.node
     ---@param outNode? vm.node
     : call(function (tracer, action, topNode, outNode)
-        if action.node == tracer.source then
+        if tracer.getMap[action] then
             tracer.nodes[action] = topNode
             if outNode then
                 topNode = topNode:copy():setTruthy()
@@ -206,6 +282,10 @@ local lookIntoChild = util.switch()
     ---@param topNode  vm.node
     ---@param outNode? vm.node
     : call(function (tracer, action, topNode, outNode)
+        if action.type == 'loop' then
+            tracer:lookIntoChild(action.init, topNode)
+            tracer:lookIntoChild(action.max, topNode)
+        end
         if action[1] then
             tracer:lookIntoBlock(action, action.bstart, topNode:copy())
             local lastAssign = tracer:getLastAssign(action.start, action.finish)
@@ -293,7 +373,7 @@ local lookIntoChild = util.switch()
                 local neverReturn = subBlock.hasReturn
                                 or  subBlock.hasGoTo
                                 or  subBlock.hasBreak
-                                or  subBlock.hasError
+                                or  subBlock.hasExit
                 if neverReturn then
                     mergedNode = true
                 else
@@ -328,6 +408,13 @@ local lookIntoChild = util.switch()
     : call(function (tracer, action, topNode, outNode)
         tracer:lookIntoChild(action.node, topNode)
         tracer:lookIntoChild(action.field, topNode)
+        if tracer.getMap[action] then
+            tracer.nodes[action] = topNode
+            if outNode then
+                topNode = topNode:copy():setTruthy()
+                outNode = outNode:copy():setFalsy()
+            end
+        end
         return topNode, outNode
     end)
     : case 'getmethod'
@@ -338,6 +425,13 @@ local lookIntoChild = util.switch()
     : call(function (tracer, action, topNode, outNode)
         tracer:lookIntoChild(action.node, topNode)
         tracer:lookIntoChild(action.method, topNode)
+        if tracer.getMap[action] then
+            tracer.nodes[action] = topNode
+            if outNode then
+                topNode = topNode:copy():setTruthy()
+                outNode = outNode:copy():setFalsy()
+            end
+        end
         return topNode, outNode
     end)
     : case 'getindex'
@@ -348,6 +442,13 @@ local lookIntoChild = util.switch()
     : call(function (tracer, action, topNode, outNode)
         tracer:lookIntoChild(action.node, topNode)
         tracer:lookIntoChild(action.index, topNode)
+        if tracer.getMap[action] then
+            tracer.nodes[action] = topNode
+            if outNode then
+                topNode = topNode:copy():setTruthy()
+                outNode = outNode:copy():setFalsy()
+            end
+        end
         return topNode, outNode
     end)
     : case 'setfield'
@@ -412,10 +513,9 @@ local lookIntoChild = util.switch()
             and call.node
             and call.node.special == 'type'
             and call.args then
-                local getLoc = call.args[1]
-                if  getLoc
-                and getLoc.type == 'getlocal'
-                and getLoc.node == tracer.source then
+                local getVar = call.args[1]
+                if  getVar
+                and tracer.getMap[getVar] then
                     for _, ref in ipairs(action.ref) do
                         tracer:collectCare(ref)
                     end
@@ -434,7 +534,7 @@ local lookIntoChild = util.switch()
     ---@param outNode? vm.node
     : call(function (tracer, action, topNode, outNode)
         for _, ret in ipairs(action) do
-            tracer:lookIntoChild(ret, topNode)
+            tracer:lookIntoChild(ret, topNode:copy())
         end
         return topNode, outNode
     end)
@@ -475,7 +575,7 @@ local lookIntoChild = util.switch()
             for i = 2, #action.args do
                 tracer:lookIntoChild(action.args[i], topNode, topNode:copy())
             end
-            topNode = tracer:lookIntoChild(action.args[1], topNode, topNode:copy())
+            topNode = tracer:lookIntoChild(action.args[1], topNode:copy(), topNode:copy())
         end
         tracer:lookIntoChild(action.node, topNode)
         tracer:lookIntoChild(action.args, topNode)
@@ -511,10 +611,11 @@ local lookIntoChild = util.switch()
                 end
             end
             if not handler then
+                tracer:lookIntoChild(action[1], topNode)
+                tracer:lookIntoChild(action[2], topNode)
                 return topNode, outNode
             end
-            if  handler.type == 'getlocal'
-            and handler.node == tracer.source then
+            if tracer.getMap[handler] then
                 -- if x == y then
                 topNode = tracer:lookIntoChild(handler, topNode, outNode)
                 local checkerNode = vm.compileNode(checker)
@@ -538,10 +639,10 @@ local lookIntoChild = util.switch()
             and    handler.node.special == 'type'
             and    handler.args
             and    handler.args[1]
-            and    handler.args[1].type == 'getlocal'
-            and    handler.args[1].node == tracer.source then
+            and    tracer.getMap[handler.args[1]] then
                 -- if type(x) == 'string' then
-                tracer:lookIntoChild(handler, topNode:copy())
+                tracer:lookIntoChild(handler, topNode)
+                topNode = topNode:copy()
                 if action.op.type == '==' then
                     topNode:narrow(tracer.uri, checker[1])
                     if outNode then
@@ -555,6 +656,7 @@ local lookIntoChild = util.switch()
                 end
             elseif handler.type == 'getlocal'
             and    checker.type == 'string' then
+                -- `local tp = type(x);if tp == 'string' then`
                 local nodeValue = vm.getObjectValue(handler.node)
                 if  nodeValue
                 and nodeValue.type == 'select'
@@ -564,10 +666,7 @@ local lookIntoChild = util.switch()
                     and call.type == 'call'
                     and call.node.special == 'type'
                     and call.args
-                    and call.args[1]
-                    and call.args[1].type == 'getlocal'
-                    and call.args[1].node == tracer.source then
-                        -- `local tp = type(x);if tp == 'string' then`
+                    and tracer.getMap[call.args[1]] then
                         if action.op.type == '==' then
                             topNode:narrow(tracer.uri, checker[1])
                             if outNode then
@@ -633,6 +732,12 @@ function mt:lookIntoBlock(block, start, node)
         end
         if self.careMap[action] then
             node = self:lookIntoChild(action, node)
+            if action.type == 'do'
+            or action.type == 'loop'
+            or action.type == 'in'
+            or action.type == 'repeat' then
+                return
+            end
         end
         if action.finish > start and self.assignMap[action] then
             return
@@ -640,21 +745,29 @@ function mt:lookIntoBlock(block, start, node)
         ::CONTINUE::
     end
     self.nodes[block] = node
+    if block.type == 'do'
+    or block.type == 'loop'
+    or block.type == 'in'
+    or block.type == 'repeat' then
+        self:lookIntoBlock(block.parent, block.finish, node)
+    end
 end
 
 ---@param source parser.object
 function mt:calcNode(source)
-    if source.type == 'getlocal' then
-        local lastAssign = self:getLastAssign(0, source.start)
+    if self.getMap[source] then
+        local lastAssign = self:getLastAssign(0, source.finish)
         if not lastAssign then
-            lastAssign = source.node
+            return
+        end
+        if self.fastCalc then
+            self.nodes[source] = vm.compileNode(lastAssign)
+            return
         end
         self:calcNode(lastAssign)
         return
     end
-    if source.type == 'local'
-    or source.type == 'self'
-    or source.type == 'setlocal' then
+    if self.assignMap[source] then
         local node = vm.compileNode(source)
         self.nodes[source] = node
         local parentBlock = guide.getParentBlock(source)
@@ -684,32 +797,48 @@ end
 ---@class vm.node
 ---@field package _tracer vm.tracer
 
----@param source parser.object
+---@param mode tracer.mode
+---@param source parser.object | vm.variable
+---@param name string
 ---@return vm.tracer?
-local function createTracer(source)
+local function createTracer(mode, source, name)
     local node = vm.compileNode(source)
     local tracer = node._tracer
     if tracer then
         return tracer
     end
-    local main = guide.getParentBlock(source)
+    local main
+    if source.type == 'variable' then
+        ---@cast source vm.variable
+        main = guide.getParentBlock(source.base)
+    else
+        ---@cast source parser.object
+        main = guide.getParentBlock(source)
+    end
     if not main then
         return nil
     end
     tracer = setmetatable({
         source    = source,
+        mode      = mode,
+        name      = name,
         assigns   = {},
         assignMap = {},
+        getMap    = {},
         careMap   = {},
         mark      = {},
         casts     = {},
         nodes     = {},
         main      = main,
-        uri       = guide.getUri(source),
+        uri       = guide.getUri(main),
     }, mt)
     node._tracer = tracer
 
-    tracer:collectLocal()
+    if tracer.mode == 'local' then
+        tracer:collectLocal()
+    else
+        tracer:collectGlobal()
+    end
 
     return tracer
 end
@@ -717,12 +846,23 @@ end
 ---@param source parser.object
 ---@return vm.node?
 function vm.traceNode(source)
-    local loc
-    if source.type == 'getlocal'
-    or source.type == 'setlocal' then
-        loc = source.node
+    local mode, base, name
+    if vm.getGlobalNode(source) then
+        base = vm.getGlobalBase(source)
+        if not base then
+            return nil
+        end
+        mode = 'global'
+        name = base.global:getCodeName()
+    else
+        base = vm.getVariable(source)
+        if not base then
+            return nil
+        end
+        name = base:getCodeName()
+        mode = 'local'
     end
-    local tracer = createTracer(loc)
+    local tracer = createTracer(mode, base, name)
     if not tracer then
         return nil
     end
