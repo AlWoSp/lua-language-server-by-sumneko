@@ -83,9 +83,9 @@ local function findNearestSource(state, position)
     return source
 end
 
-local function findNearestTableField(state, position)
-    local uri     = state.uri
-    local text    = files.getText(uri)
+local function findNearestTable(state, position)
+    local uri  = state.uri
+    local text = files.getText(uri)
     if not text then
         return nil
     end
@@ -101,13 +101,47 @@ local function findNearestTableField(state, position)
     local sposition = guide.offsetToPosition(state, soffset)
     local source
     guide.eachSourceContain(state.ast, sposition, function (src)
-        if src.type == 'table'
-        or src.type == 'tablefield'
-        or src.type == 'tableindex'
-        or src.type == 'tableexp' then
+        if src.type == 'table' then
             source = src
         end
     end)
+
+    if not source then
+        return nil
+    end
+
+    for _, field in ipairs(source) do
+        if field.start <= position and (field.range or field.finish) >= position then
+            if field.type == 'tableexp' then
+                if field.value.type == 'getlocal'
+                or field.value.type == 'getglobal' then
+                    if field.finish >= position then
+                        return source
+                    else
+                        return nil
+                    end
+                end
+            end
+            if field.type == 'tablefield' then
+                if field.finish >= position then
+                    return source
+                else
+                    return nil
+                end
+            end
+            if field.type == 'tableindex' then
+                if field.index and field.index.type == 'string' then
+                    if field.index.finish >= position then
+                        return source
+                    else
+                        return nil
+                    end
+                end
+            end
+            return nil
+        end
+    end
+
     return source
 end
 
@@ -409,6 +443,7 @@ local function checkFieldFromFieldToIndex(state, name, src, parent, word, startP
         or config.get(state.uri, 'Lua.runtime.unicodeName') then
             return nil
         end
+        name = ('%q'):format(name)
     end
     local textEdit, additionalTextEdits
     local startOffset = guide.positionToOffset(state, startPos)
@@ -425,12 +460,7 @@ local function checkFieldFromFieldToIndex(state, name, src, parent, word, startP
         wordStartOffset = offset - #word
     end
     local wordStartPos = guide.offsetToPosition(state, wordStartOffset)
-    local newText
-    if vm.getKeyType(src) == 'string' then
-        newText = ('[%q]'):format(name)
-    else
-        newText = ('[%s]'):format(name)
-    end
+    local newText = ('[%s]'):format(name)
     textEdit = {
         start   = wordStartPos,
         finish  = position,
@@ -507,7 +537,7 @@ local function checkFieldThen(state, name, src, word, startPos, position, parent
         textEdit = {
             start   = str.start + #str[2],
             finish  = position,
-            newText = name,
+            newText = name:sub(#str[2] + 1, - #str[2] - 1),
         }
     else
         textEdit, additionalTextEdits = checkFieldFromFieldToIndex(state, name, src, parent, word, startPos, position)
@@ -549,7 +579,7 @@ local function checkFieldOfRefs(refs, state, word, startPos, position, parent, o
         if isGlobal and locals and locals[name] then
             goto CONTINUE
         end
-        if not matchKey(word, name, count >= 100) then
+        if not matchKey(word, name:gsub([=[^['"]]=], ''), count >= 100) then
             goto CONTINUE
         end
         if not vm.isVisible(parent, src) then
@@ -575,7 +605,7 @@ local function checkFieldOfRefs(refs, state, word, startPos, position, parent, o
                     end
                 end
                 funcs[name] = true
-                if fields[name] and not guide.isSet(fields[name]) then
+                if fields[name] and not guide.isAssign(fields[name]) then
                     fields[name] = nil
                 end
                 goto CONTINUE
@@ -590,7 +620,7 @@ local function checkFieldOfRefs(refs, state, word, startPos, position, parent, o
         if vm.getDeprecated(src) then
             goto CONTINUE
         end
-        if guide.isSet(src) then
+        if guide.isAssign(src) then
             fields[name] = src
             goto CONTINUE
         end
@@ -1216,7 +1246,7 @@ local function insertEnum(state, pos, src, enums, isInArray, mark)
     or src.type == 'doc.type.boolean' then
         ---@cast src parser.object
         enums[#enums+1] = {
-            label       = vm.viewObject(src, state.uri),
+            label       = vm.getInfer(src):view(state.uri),
             description = src.comment,
             kind        = define.CompletionItemKind.EnumMember,
         }
@@ -1557,20 +1587,15 @@ local function tryCallArg(state, position, results)
 end
 
 local function tryTable(state, position, results)
-    local source = findNearestTableField(state, position)
-    if not source then
+    local tbl = findNearestTable(state, position)
+    if not tbl then
         return false
     end
-    if  source.type ~= 'table'
-    and (not source.parent or source.parent.type ~= 'table') then
+    if  tbl.type ~= 'table' then
         return
     end
     local mark = {}
     local fields = {}
-    local tbl = source
-    if source.type ~= 'table' then
-        tbl = source.parent
-    end
 
     local defs = vm.getFields(tbl)
     for _, field in ipairs(defs) do

@@ -1117,6 +1117,127 @@ local B = "World"
 local x = A
 ]]
 
+TEST [[
+local enum = { a = 1, b = 2 }
+
+---@type { [integer] : boolean }
+local t = {
+    <![enum.a]!> = 1,
+    <![enum.b]!> = 2,
+    <![3]!> = 3,
+}
+]]
+
+TEST [[
+local x
+
+if X then
+    x = 'A'
+elseif X then
+    x = 'B'
+else
+    x = 'C'
+end
+
+local y = x
+
+<!y!> = nil
+]]
+(function (diags)
+    local diag = diags[1]
+    assert(diag.message == [[
+已显式定义变量的类型为 `string` ，不能再将其类型转换为 `nil`。
+- `nil` 无法匹配 `string`
+- 类型 `nil` 无法匹配 `string`]])
+end)
+
+
+TEST [[
+---@type 'A'|'B'|'C'|'D'|'E'|'F'|'G'|'H'|'I'|'J'|'K'|'L'|'M'|'N'|'O'|'P'|'Q'|'R'|'S'|'T'|'U'|'V'|'W'|'X'|'Y'|'Z'
+local x
+
+<!x!> = nil
+]]
+(function (diags)
+    local diag = diags[1]
+    assert(diag.message == [[
+已显式定义变量的类型为 `'A'|'B'|'C'|'D'|'E'...(+21)` ，不能再将其类型转换为 `nil`。
+- `nil` 无法匹配 `'A'|'B'|'C'|'D'|'E'...(+21)`
+- `nil` 无法匹配 `'A'|'B'|'C'|'D'|'E'...(+21)` 中的任何子类
+- 类型 `nil` 无法匹配 `'Z'`
+- 类型 `nil` 无法匹配 `'Y'`
+- 类型 `nil` 无法匹配 `'X'`
+- 类型 `nil` 无法匹配 `'W'`
+- 类型 `nil` 无法匹配 `'V'`
+- 类型 `nil` 无法匹配 `'U'`
+- 类型 `nil` 无法匹配 `'T'`
+- 类型 `nil` 无法匹配 `'S'`
+- 类型 `nil` 无法匹配 `'R'`
+- 类型 `nil` 无法匹配 `'Q'`
+...(+13)
+- 类型 `nil` 无法匹配 `'C'`
+- 类型 `nil` 无法匹配 `'B'`
+- 类型 `nil` 无法匹配 `'A'`]])
+end)
+
+TEST [[
+---@param v integer
+---@return boolean
+local function is_string(v)
+    return type(v) == 'string'
+end
+
+print(is_string(3))
+]]
+
+TEST [[
+---@class SomeClass
+---@field [1] string
+-- ...
+
+---@param some_param SomeClass|SomeClass[]
+local function some_fn(some_param) return end
+
+some_fn { { "test" } } -- <- diagnostic: "Cannot assign `table` to `string`."
+]]
+
+TEST [[
+---@param p integer|string
+local function get_val(p)
+    local is_number = type(p) == 'number'
+    return is_number and p or p
+end
+
+get_val('hi')
+]]
+
+TESTWITH 'param-type-mismatch' [[
+---@class Class
+local Class = {}
+
+---@param source string
+function Class.staticCreator(source)
+
+end
+
+Class.staticCreator(<!true!>)
+Class<!:!>staticCreator() -- Expecting a waring
+]]
+
+TESTWITH 'assign-type-mismatch' [[
+---@type string[]
+local arr = {
+    <!3!>,
+}
+]]
+
+TESTWITH 'assign-type-mismatch' [[
+---@type (string|boolean)[]
+local arr2 = {
+    <!3!>, -- no warnings
+}
+]]
+
 config.remove(nil, 'Lua.diagnostics.disable', 'unused-local')
 config.remove(nil, 'Lua.diagnostics.disable', 'unused-function')
 config.remove(nil, 'Lua.diagnostics.disable', 'undefined-global')

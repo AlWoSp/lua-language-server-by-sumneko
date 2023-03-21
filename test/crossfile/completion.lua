@@ -10,6 +10,7 @@ local define   = require 'proto.define'
 rawset(_G, 'TEST', true)
 
 local CompletionItemKind = define.CompletionItemKind
+local NeedRemoveMeta = false
 
 local EXISTS = {}
 
@@ -87,7 +88,9 @@ function TEST(data)
     assert(result ~= nil)
     result.complete = nil
     result.enableCommon = nil
-    removeMetas(result)
+    if NeedRemoveMeta then
+        removeMetas(result)
+    end
     for _, item in ipairs(result) do
         if item.id then
             local r = core.resolve(item.id)
@@ -120,6 +123,37 @@ local function WITH_CONFIG(cfg, f)
         config.set(nil, k, v)
     end
 end
+
+TEST {
+    {
+        path = 'abc.lua',
+        content = [[
+            ---@meta
+
+            ---@class A
+            ---@field f1 integer
+            ---@field f2 boolean
+            
+            ---@type A[]
+            X = {}
+]],
+    },
+    {
+        path = 'test.lua',
+        content = [[ X[1].<??>]],
+        main = true,
+    },
+    completion = {
+        {
+            label = 'f1',
+            kind = CompletionItemKind.Field,
+        },
+        {
+            label = 'f2',
+            kind = CompletionItemKind.Field,
+        },
+    }
+}
 
 TEST {
     {
@@ -441,6 +475,51 @@ config.set(nil, 'Lua.runtime.path', originRuntimePath)
 
 TEST {
     {
+        path = 'abc.lua',
+        content = '---@meta _',
+    },
+    {
+        path = 'test.lua',
+        content = 'require "a<??>"',
+        main = true,
+    },
+    completion = nil
+}
+
+TEST {
+    {
+        path = 'abc.lua',
+        content = '---@meta xxxxx',
+    },
+    {
+        path = 'test.lua',
+        content = 'require "a<??>"',
+        main = true,
+    },
+    completion = nil
+}
+
+TEST {
+    {
+        path = 'abc.lua',
+        content = '---@meta xxxxx',
+    },
+    {
+        path = 'test.lua',
+        content = 'require "xx<??>"',
+        main = true,
+    },
+    completion = {
+        {
+            label = 'xxxxx',
+            kind = CompletionItemKind.File,
+            textEdit = EXISTS,
+        }
+    }
+}
+
+TEST {
+    {
         path = 'a.lua',
         content = [[
             return {
@@ -560,6 +639,8 @@ TEST {
     },
     completion = nil,
 }
+
+NeedRemoveMeta = true
 
 TEST {
     { path = 'f/a.lua' },

@@ -178,7 +178,7 @@ TEST 'boolean' [[
 <?x?> = a == b
 ]]
 
-TEST 'integer' [[
+TEST 'unknown' [[
 <?x?> = a << b
 ]]
 
@@ -186,7 +186,7 @@ TEST 'integer' [[
 <?x?> = 1 << 2
 ]]
 
-TEST 'string' [[
+TEST 'unknown' [[
 <?x?> = a .. b
 ]]
 
@@ -202,7 +202,7 @@ TEST 'string' [[
 <?x?> = 'a' .. 1.0
 ]]
 
-TEST 'number' [[
+TEST 'unknown' [[
 <?x?> = a + b
 ]]
 
@@ -227,11 +227,11 @@ local a
 <?x?> = - a
 ]]
 
-TEST 'integer' [[
+TEST 'unknown' [[
 <?x?> = 1 + X
 ]]
 
-TEST 'number' [[
+TEST 'unknown' [[
 <?x?> = 1.0 + X
 ]]
 
@@ -2416,7 +2416,7 @@ local <?z?> = f()
 
 TEST 'integer|table' [[
 local function returnI()
-    return a + 1
+    return 1
 end
 
 local function f()
@@ -2552,21 +2552,21 @@ end
 print(<?x?>)
 ]]
 
-TEST 'table<unknown, true>' [[
+TEST 'table<xxx, true>' [[
 ---@alias xxx table<xxx, true>
 
 ---@type xxx
 local <?t?>
 ]]
 
-TEST 'unknown[][]' [[
+TEST 'xxx[][]' [[
 ---@alias xxx xxx[]
 
 ---@type xxx
 local <?t?>
 ]]
 
-TEST 'fun(x: fun(x: unknown))' [[
+TEST 'fun(x: fun(x: xxx))' [[
 ---@alias xxx fun(x: xxx)
 
 ---@type xxx
@@ -2615,6 +2615,17 @@ local n
 
 if not n then
     error('n is nil')
+end
+
+print(<?n?>)
+]]
+
+TEST 'integer' [[
+---@type integer?
+local n
+
+if not n then
+    os.exit()
 end
 
 print(<?n?>)
@@ -2893,10 +2904,7 @@ local <?x?> = echo(b)
 ]]
 
 TEST 'boolean' [[
----@return boolean
-function f()
-end
-
+---@overload fun():boolean
 ---@param x integer
 ---@return number
 function f(x)
@@ -2906,10 +2914,7 @@ local <?x?> = f()
 ]]
 
 TEST 'number' [[
----@return boolean
-function f()
-end
-
+---@overload fun():boolean
 ---@param x integer
 ---@return number
 function f(x)
@@ -2919,10 +2924,7 @@ local <?x?> = f(1)
 ]]
 
 TEST 'boolean' [[
----@return boolean
-function f()
-end
-
+---@overload fun():boolean
 ---@param x integer
 ---@return number
 function f(x)
@@ -2936,10 +2938,7 @@ local <?x?> = f(r0())
 ]]
 
 TEST 'number' [[
----@return boolean
-function f()
-end
-
+---@overload fun():boolean
 ---@param x integer
 ---@return number
 function f(x)
@@ -2953,10 +2952,7 @@ local <?x?> = f(r1())
 ]]
 
 TEST 'boolean' [[
----@return boolean
-function f()
-end
-
+---@overload fun():boolean
 ---@param x integer
 ---@return number
 function f(x)
@@ -2969,10 +2965,7 @@ local <?x?> = f(r0())
 ]]
 
 TEST 'number' [[
----@return boolean
-function f()
-end
-
+---@overload fun():boolean
 ---@param x integer
 ---@return number
 function f(x)
@@ -4147,4 +4140,117 @@ local f
 for _, <?x?> in ipairs(xs) do
     x = f(x)
 end
+]]
+
+TEST 'number' [[
+---@type number?
+X = Y
+
+if X then
+    print(<?X?>)
+end
+]]
+
+TEST 'number' [[
+---@type number|boolean
+X = Y
+
+if type(X) == 'number' then
+    print(<?X?>)
+end
+]]
+
+TEST 'boolean' [[
+---@type number|boolean
+X = Y
+
+if type(X) ~= 'number' then
+    print(<?X?>)
+end
+]]
+
+TEST 'boolean' [[
+---@type number
+X = Y
+
+---@cast X boolean
+
+print(<?X?>)
+]]
+
+TEST 'number' [[
+---@type number
+local t
+
+if xxx == <?t?> then
+    print(t)
+end
+]]
+
+TEST 'V' [[
+---@class V
+X = 1
+
+print(<?X?>)
+]]
+
+TEST 'V' [[
+---@class V
+X.Y = 1
+
+print(X.<?Y?>)
+]]
+
+TEST 'integer' [[
+local x = {}
+
+x.y = 1
+local y = x.y
+x.y = nil
+
+print(<?y?>)
+]]
+
+TEST 'function' [[
+function X()
+    <?Y?>()
+end
+
+function Y()
+end
+]]
+
+TEST 'A_Class' [[
+---@class A_Class
+local A = { x = 5 }
+
+function A:func()
+    for i = 1, <?self?>.x do
+        print(i)
+    end
+
+    self.y = 3
+    self.y = self.y + 3
+end
+]]
+
+TEST 'number' [[
+---@type number?
+local n
+local <?v?> = n or error('')
+]]
+
+TEST 'Foo' [[
+---@class Foo
+---@operator mul(Foo): Foo
+---@operator mul(Bar): Foo
+---@class Bar
+
+---@type Foo
+local foo
+
+---@type Foo|Bar
+local fooOrBar
+
+local <?b?> = foo * fooOrBar
 ]]

@@ -72,7 +72,7 @@ local type         = type
 ---@field hasGoTo?              true
 ---@field hasReturn?            true
 ---@field hasBreak?             true
----@field hasError?             true
+---@field hasExit?              true
 ---@field [integer]             parser.object|any
 ---@field package _root          parser.object
 
@@ -82,7 +82,8 @@ local m = {}
 
 m.ANY = {"<ANY>"}
 
-m.namePattern = '[%a_\x80-\xff][%w_\x80-\xff]*'
+m.notNamePattern  = '[^%w_\x80-\xff]'
+m.namePattern     = '[%a_\x80-\xff][%w_\x80-\xff]*'
 m.namePatternFull = '^' .. m.namePattern .. '$'
 
 local blockTypes = {
@@ -91,6 +92,16 @@ local blockTypes = {
     ['loop']        = true,
     ['repeat']      = true,
     ['do']          = true,
+    ['function']    = true,
+    ['if']          = true,
+    ['ifblock']     = true,
+    ['elseblock']   = true,
+    ['elseifblock'] = true,
+    ['main']        = true,
+}
+
+local topBlockTypes = {
+    ['while']       = true,
     ['function']    = true,
     ['if']          = true,
     ['ifblock']     = true,
@@ -165,9 +176,10 @@ local childMap = {
     ['doc.version']        = {'#versions'},
     ['doc.diagnostic']     = {'#names'},
     ['doc.as']             = {'as'},
-    ['doc.cast']           = {'loc', '#casts'},
+    ['doc.cast']           = {'name', '#casts'},
     ['doc.cast.block']     = {'extends'},
     ['doc.operator']       = {'op', 'exp', 'extends'},
+    ['doc.meta']           = {'name'},
 }
 
 ---@type table<string, fun(obj: parser.object, list: parser.object[])>
@@ -433,7 +445,7 @@ function m.getRoot(obj)
     error('guide.getRoot overstack')
 end
 
----@param obj parser.object
+---@param obj parser.object | { uri: uri }
 ---@return uri
 function m.getUri(obj)
     if obj.uri then
@@ -466,6 +478,9 @@ function m.getLocal(source, name, pos)
     for _ = 1, 10000 do
         if not block then
             return nil
+        end
+        if block.type == 'main' then
+            break
         end
         if  block.start <= pos
         and block.finish >= pos
@@ -884,7 +899,7 @@ function m.getLineRange(state, row)
     return 0
 end
 
-local isSetMap = {
+local assignTypeMap = {
     ['setglobal']         = true,
     ['local']             = true,
     ['self']              = true,
@@ -906,9 +921,9 @@ local isSetMap = {
     ['doc.type.field']    = true,
     ['doc.type.array']    = true,
 }
-function m.isSet(source)
+function m.isAssign(source)
     local tp = source.type
-    if isSetMap[tp] then
+    if assignTypeMap[tp] then
         return true
     end
     if tp == 'call' then
@@ -920,7 +935,7 @@ function m.isSet(source)
     return false
 end
 
-local isGetMap = {
+local getTypeMap = {
     ['getglobal'] = true,
     ['getlocal']  = true,
     ['getfield']  = true,
@@ -929,7 +944,7 @@ local isGetMap = {
 }
 function m.isGet(source)
     local tp = source.type
-    if isGetMap[tp] then
+    if getTypeMap[tp] then
         return true
     end
     if tp == 'call' then
@@ -1250,14 +1265,28 @@ end
 function m.getTopBlock(source)
     for _ = 1, 1000 do
         local block = source.parent
-        if not m.isBlockType(block) then
+        if not block then
             return nil
         end
-        if block.type ~= 'do' then
+        if topBlockTypes[block.type] then
             return block
         end
+        source = block
     end
     return nil
+end
+
+---@param source parser.object
+---@return boolean
+function m.isParam(source)
+    if  source.type ~= 'local'
+    and source.type ~= 'self' then
+        return false
+    end
+    if source.parent.type ~= 'funcargs' then
+        return false
+    end
+    return true
 end
 
 return m
