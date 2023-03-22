@@ -18,7 +18,7 @@ local function isDocClass(source)
 end
 
 -- If global elements are discouraged by coding convention, this diagnostic helps with reminding about that
--- Exemptions may be added to Lua.diagnostics.globals
+-- Exceptions may be added to Lua.diagnostics.globals
 return function (uri, callback)
     local ast = files.getState(uri)
     if not ast then
