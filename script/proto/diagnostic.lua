@@ -101,14 +101,14 @@ m.register {
 }
 
 m.register {
-    'missing-return-doc',
+    'missing-global-doc',
     'missing-param-doc',
-    'missing-global-doc',} {
-group    = 'luadoc',
-severity = 'Warning',
-status   = 'None',
+    'missing-return-doc',
+} {
+	group    = 'luadoc',
+	severity = 'Warning',
+	status   = 'None',
 }
-
 
 m.register {
     'codestyle-check'

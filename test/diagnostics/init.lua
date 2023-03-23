@@ -51,3 +51,6 @@ end
 
 require 'diagnostics.common'
 require 'diagnostics.type-check'
+require 'diagnostics.missing-global-doc'
+require 'diagnostics.missing-param-doc'
+require 'diagnostics.missing-return-doc'
