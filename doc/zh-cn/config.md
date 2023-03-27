@@ -238,6 +238,7 @@ Array<string>
 * ``"err-nonstandard-symbol"``
 * ``"err-then-as-do"``
 * ``"exp-in-action"``
+* ``"global-element"``
 * ``"global-in-nil-env"``
 * ``"index-in-func-name"``
 * ``"invisible"``
@@ -291,6 +292,7 @@ Array<string>
 * ``"missing-return-value"``
 * ``"need-check-nil"``
 * ``"need-paren"``
+* ``"nesting-long-mark"``
 * ``"newfield-call"``
 * ``"newline-call"``
 * ``"no-unknown"``
@@ -473,6 +475,10 @@ object<string, string>
     */
     "strict": "Fallback",
     /*
+    * global-element
+    */
+    "strict-convention": "None",
+    /*
     * no-unknown
     */
     "strong": "Fallback",
@@ -594,6 +600,10 @@ object<string, string>
     * invisible
     */
     "strict": "Fallback",
+    /*
+    * global-element
+    */
+    "strict-convention": "Fallback",
     /*
     * no-unknown
     */
@@ -782,6 +792,10 @@ object<string, string>
     空代码块
     */
     "empty-block": "Opened",
+    /*
+    Enable diagnostics to warn about global elements.
+    */
+    "global-element": "None",
     /*
     不能使用全局变量（ `_ENV` 被设置为了 `nil`）
     */
@@ -1041,6 +1055,10 @@ object<string, string>
     空代码块
     */
     "empty-block": "Hint",
+    /*
+    Enable diagnostics to warn about global elements.
+    */
+    "global-element": "Warning",
     /*
     不能使用全局变量（ `_ENV` 被设置为了 `nil`）
     */
@@ -1609,7 +1627,7 @@ string
 
 # misc.parameters
 
-VSCode中启动语言服务时的[命令行参数](https://github.com/sumneko/lua-language-server/wiki/Getting-Started#arguments)。
+VSCode中启动语言服务时的[命令行参数](https://github.com/LuaLS/lua-language-server/wiki/Getting-Started#arguments)。
 
 ## type
 
@@ -1784,7 +1802,7 @@ false
 
 # runtime.plugin
 
-插件路径，请查阅[文档](https://github.com/sumneko/lua-language-server/wiki/Plugins)了解用法。
+插件路径，请查阅[文档](https://github.com/LuaLS/lua-language-server/wiki/Plugins)了解用法。
 
 ## type
 
@@ -2192,22 +2210,6 @@ integer
 500
 ```
 
-# workspace.supportScheme
-
-为以下 scheme 的lua文件提供语言服务。
-
-## type
-
-```ts
-Array<string>
-```
-
-## default
-
-```jsonc
-["file","untitled","git"]
-```
-
 # workspace.useGitIgnore
 
 忽略 `.gitignore` 中列举的文件。
@@ -2226,7 +2228,7 @@ true
 
 # workspace.userThirdParty
 
-在这里添加私有的第三方库适配文件路径，请参考内置的[配置文件路径](https://github.com/sumneko/lua-language-server/tree/master/meta/3rd)
+在这里添加私有的第三方库适配文件路径，请参考内置的[配置文件路径](https://github.com/LuaLS/lua-language-server/tree/master/meta/3rd)
 
 ## type
 

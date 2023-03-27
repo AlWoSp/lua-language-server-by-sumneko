@@ -72,7 +72,7 @@ local type         = type
 ---@field hasGoTo?              true
 ---@field hasReturn?            true
 ---@field hasBreak?             true
----@field hasError?             true
+---@field hasExit?              true
 ---@field [integer]             parser.object|any
 ---@field package _root          parser.object
 
@@ -82,7 +82,8 @@ local m = {}
 
 m.ANY = {"<ANY>"}
 
-m.namePattern = '[%a_\x80-\xff][%w_\x80-\xff]*'
+m.notNamePattern  = '[^%w_\x80-\xff]'
+m.namePattern     = '[%a_\x80-\xff][%w_\x80-\xff]*'
 m.namePatternFull = '^' .. m.namePattern .. '$'
 
 local blockTypes = {
@@ -477,6 +478,9 @@ function m.getLocal(source, name, pos)
     for _ = 1, 10000 do
         if not block then
             return nil
+        end
+        if block.type == 'main' then
+            break
         end
         if  block.start <= pos
         and block.finish >= pos
@@ -1270,6 +1274,19 @@ function m.getTopBlock(source)
         source = block
     end
     return nil
+end
+
+---@param source parser.object
+---@return boolean
+function m.isParam(source)
+    if  source.type ~= 'local'
+    and source.type ~= 'self' then
+        return false
+    end
+    if source.parent.type ~= 'funcargs' then
+        return false
+    end
+    return true
 end
 
 return m

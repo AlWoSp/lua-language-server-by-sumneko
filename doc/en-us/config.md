@@ -238,6 +238,7 @@ Array<string>
 * ``"err-nonstandard-symbol"``
 * ``"err-then-as-do"``
 * ``"exp-in-action"``
+* ``"global-element"``
 * ``"global-in-nil-env"``
 * ``"index-in-func-name"``
 * ``"invisible"``
@@ -291,6 +292,7 @@ Array<string>
 * ``"missing-return-value"``
 * ``"need-check-nil"``
 * ``"need-paren"``
+* ``"nesting-long-mark"``
 * ``"newfield-call"``
 * ``"newline-call"``
 * ``"no-unknown"``
@@ -473,6 +475,10 @@ object<string, string>
     */
     "strict": "Fallback",
     /*
+    * global-element
+    */
+    "strict-convention": "None",
+    /*
     * no-unknown
     */
     "strong": "Fallback",
@@ -594,6 +600,10 @@ object<string, string>
     * invisible
     */
     "strict": "Fallback",
+    /*
+    * global-element
+    */
+    "strict-convention": "Fallback",
     /*
     * no-unknown
     */
@@ -782,6 +792,10 @@ object<string, string>
     Enable empty code block diagnostics.
     */
     "empty-block": "Opened",
+    /*
+    Enable diagnostics to warn about global elements.
+    */
+    "global-element": "None",
     /*
     Enable cannot use global variables （ `_ENV` is set to `nil`） diagnostics.
     */
@@ -1042,6 +1056,10 @@ object<string, string>
     Enable empty code block diagnostics.
     */
     "empty-block": "Hint",
+    /*
+    Enable diagnostics to warn about global elements.
+    */
+    "global-element": "Warning",
     /*
     Enable cannot use global variables （ `_ENV` is set to `nil`） diagnostics.
     */
@@ -1610,7 +1628,7 @@ string
 
 # misc.parameters
 
-[Command line parameters](https://github.com/sumneko/lua-telemetry-server/tree/master/method) when starting the language server in VSCode.
+[Command line parameters](https://github.com/LuaLS/lua-telemetry-server/tree/master/method) when starting the language server in VSCode.
 
 ## type
 
@@ -1785,7 +1803,7 @@ false
 
 # runtime.plugin
 
-Plugin path. Please read [wiki](https://github.com/sumneko/lua-language-server/wiki/Plugins) to learn more.
+Plugin path. Please read [wiki](https://github.com/LuaLS/lua-language-server/wiki/Plugins) to learn more.
 
 ## type
 
@@ -2193,22 +2211,6 @@ integer
 500
 ```
 
-# workspace.supportScheme
-
-Provide language server for the Lua files of the following scheme.
-
-## type
-
-```ts
-Array<string>
-```
-
-## default
-
-```jsonc
-["file","untitled","git"]
-```
-
 # workspace.useGitIgnore
 
 Ignore files list in `.gitignore` .
@@ -2227,7 +2229,7 @@ true
 
 # workspace.userThirdParty
 
-Add private third-party library configuration file paths here, please refer to the built-in [configuration file path](https://github.com/sumneko/lua-language-server/tree/master/meta/3rd)
+Add private third-party library configuration file paths here, please refer to the built-in [configuration file path](https://github.com/LuaLS/lua-language-server/tree/master/meta/3rd)
 
 ## type
 

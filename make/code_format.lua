@@ -14,33 +14,21 @@ lm:source_set 'code_format' {
         -- codeFormatLib
         "CodeFormatLib/src/*.cpp",
         -- LuaParser
-        "LuaParser/src/*.cpp",
-        "LuaParser/src/LuaAstNode/LuaAstNode.cpp",
+        "LuaParser/src/**/*.cpp",
         -- Util
         "Util/src/StringUtil.cpp",
         "Util/src/Utf8.cpp",
-        --CodeService
-        "CodeService/src/*.cpp",
-        "CodeService/src/TypeFormat/*.cpp",
-        "CodeService/src/Spell/*.cpp",
         "Util/src/SymSpell/*.cpp",
-        "CodeService/src/FormatElement/*.cpp",
-        "CodeService/src/NameStyle/*.cpp"
+        --CodeService
+        "CodeService/src/**/*.cpp",
     },
     windows = {
-        -- 不要开哦
-        -- flasg = "/W3 /WX"
+        flags = "/utf-8",
     },
     macos = {
         flags = "-Wall -Werror",
-        defines = "NOT_SUPPORT_FILE_SYSTEM"
     },
     linux = {
-        defines = (function()
-            if lm.platform == "linux-arm64" then
-                return "NOT_SUPPORT_FILE_SYSTEM"
-            end
-        end)(),
         flags = "-Wall -Werror"
     }
 }

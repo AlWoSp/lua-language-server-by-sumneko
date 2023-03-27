@@ -11,6 +11,7 @@ local vm       = require 'vm.vm'
 ---@field _lastView? string
 ---@field _lastViewUri? uri
 ---@field _lastViewDefault? any
+---@field _subViews? string[]
 local mt = {}
 mt.__index = mt
 mt._hasTable       = false
@@ -242,6 +243,16 @@ local viewNodeSwitch;viewNodeSwitch = util.switch()
 ---@class vm.node
 ---@field lastInfer? vm.infer
 
+---@param node? vm.node
+---@return vm.infer
+local function createInfer(node)
+    local infer = setmetatable({
+        node  = node,
+        _drop = {},
+    }, mt)
+    return infer
+end
+
 ---@param source vm.node.object | vm.node
 ---@return vm.infer
 function vm.getInfer(source)
@@ -257,10 +268,7 @@ function vm.getInfer(source)
     if node.lastInfer then
         return node.lastInfer
     end
-    local infer = setmetatable({
-        node  = node,
-        _drop = {},
-    }, mt)
+    local infer = createInfer(node)
     node.lastInfer = infer
 
     return infer
@@ -310,9 +318,7 @@ function mt:_eraseAlias(uri)
                 if set.type == 'doc.alias' then
                     if expandAlias then
                         self._drop[n.name] = true
-                        local newInfer = setmetatable({
-                            _drop = {},
-                        }, mt)
+                        local newInfer = createInfer()
                         for _, ext in ipairs(set.extends.types) do
                             viewNodeSwitch(ext.type, ext, newInfer, uri)
                         end
@@ -321,7 +327,7 @@ function mt:_eraseAlias(uri)
                         end
                     else
                         for _, ext in ipairs(set.extends.types) do
-                            local view = viewNodeSwitch(ext.type, ext, {}, uri)
+                            local view = viewNodeSwitch(ext.type, ext, createInfer(), uri)
                             if view and view ~= n.name then
                                 self._drop[view] = true
                             end
@@ -413,6 +419,7 @@ function mt:view(uri, default)
     end
 
     local array = {}
+    self._subViews = array
     for view in pairs(self.views) do
         if not self._drop[view] then
             array[#array+1] = view
@@ -449,7 +456,8 @@ function mt:view(uri, default)
         if #array == 0 then
             view = 'nil'
         else
-            if max > 1 then
+            if max > 1
+            or view:find(guide.notNamePattern .. guide.namePattern .. '$') then
                 view = '(' .. view .. ')?'
             else
                 view = view .. '?'
@@ -471,6 +479,13 @@ function mt:eachView(uri)
     return next, self.views
 end
 
+---@param uri uri
+---@return string[]
+function mt:getSubViews(uri)
+    self:view(uri)
+    return self._subViews
+end
+
 ---@return string?
 function mt:viewLiterals()
     if not self.node then
@@ -483,7 +498,12 @@ function mt:viewLiterals()
         or n.type == 'number'
         or n.type == 'integer'
         or n.type == 'boolean' then
-            local literal = util.viewLiteral(n[1])
+            local literal
+            if n.type == 'string' then
+                literal = util.viewString(n[1], n[2])
+            else
+                literal = util.viewLiteral(n[1])
+            end
             if literal and not mark[literal] then
                 literals[#literals+1] = literal
                 mark[literal] = true
@@ -531,9 +551,7 @@ end
 ---@param uri uri
 ---@return string?
 function vm.viewObject(source, uri)
-    local infer = setmetatable({
-        _drop = {},
-    }, mt)
+    local infer = createInfer()
     return viewNodeSwitch(source.type, source, infer, uri)
 end
 
@@ -550,19 +568,14 @@ function vm.viewKey(source, uri)
             return '[' .. key .. ']'
         end
     end
-    if source.type == 'tableindex' then
+    if source.type == 'tableindex'
+    or source.type == 'setindex' then
         local index = source.index
-        local name = vm.getKeyName(index)
+        local name = vm.getInfer(index):viewLiterals()
         if not name then
             return nil
         end
-        local key
-        if index.type == 'string' then
-            key = util.viewString(name, index[2])
-        else
-            key = util.viewLiteral(name)
-        end
-        return ('[%s]'):format(key), name
+        return ('[%s]'):format(name), name
     end
     if source.type == 'tableexp' then
         return ('[%d]'):format(source.tindex), source.tindex

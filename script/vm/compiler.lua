@@ -192,11 +192,11 @@ local searchFieldSwitch = util.switch()
             or not math.tointeger(key) then
                 return
             end
-            pushResult(source.node)
+            pushResult(source.node, true)
         end
         if type(key) == 'table' then
             if vm.isSubType(suri, key, 'integer') then
-                pushResult(source.node)
+                pushResult(source.node, true)
             end
         end
     end)
@@ -217,21 +217,21 @@ local searchFieldSwitch = util.switch()
                         or (fn.name == 'number'  and type(key) == 'number')
                         or (fn.name == 'integer' and math.tointeger(key))
                         or (fn.name == 'string'  and type(key) == 'string') then
-                            pushResult(field)
+                            pushResult(field, true)
                         end
                     elseif fn.type == 'doc.type.string'
                     or     fn.type == 'doc.type.integer'
                     or     fn.type == 'doc.type.boolean' then
                         if key == vm.ANY
                         or fn[1] == key then
-                            pushResult(field)
+                            pushResult(field, true)
                         end
                     end
                 end
             end
             if fieldKey.type == 'doc.field.name' then
                 if key == vm.ANY or fieldKey[1] == key then
-                    pushResult(field)
+                    pushResult(field, true)
                 end
             end
         end
@@ -1177,7 +1177,8 @@ local compilerSwitch = util.switch()
         end
 
         -- { f = function (<?x?>) end }
-        if guide.isAssign(parent) then
+        if  guide.isAssign(parent)
+        and parent.value == source then
             vm.setNode(source, vm.compileNode(parent))
         end
     end)
@@ -1284,6 +1285,9 @@ local compilerSwitch = util.switch()
         if source.node[1] ~= '_ENV' then
             return
         end
+        if not source.value then
+            return
+        end
         vm.setNode(source, vm.compileNode(source.value))
     end)
     : case 'getglobal'
@@ -1324,6 +1328,18 @@ local compilerSwitch = util.switch()
             end
         end
 
+        if not hasMarkDoc and source.type == 'tableindex' then
+            vm.compileByParentNode(source.node, vm.ANY, function (src)
+                if src.type == 'doc.field'
+                or src.type == 'doc.type.field' then
+                    if vm.isSubType(guide.getUri(source), vm.compileNode(source.index), vm.compileNode(src.field or src.name)) then
+                        hasMarkDoc = true
+                        vm.setNode(source, vm.compileNode(src))
+                    end
+                end
+            end)
+        end
+
         if not hasMarkDoc and source.value then
             vm.setNode(source, vm.compileNode(source.value))
         end
@@ -1341,6 +1357,7 @@ local compilerSwitch = util.switch()
             if src.type == 'doc.field'
             or src.type == 'doc.type.field'
             or src.type == 'doc.type.name'
+            or src.type == 'doc.type'
             or guide.isLiteral(src) then
                 hasMarkDoc = true
                 vm.setNode(source, vm.compileNode(src))
@@ -1471,6 +1488,21 @@ local compilerSwitch = util.switch()
             return
         end
         if func.special == 'require' then
+            if index == 2 then
+                local uri = guide.getUri(source)
+                local version = config.get(uri, 'Lua.runtime.version')
+                if version == 'Lua 5.3'
+                or version == 'Lua 5.4' then
+                    vm.setNode(source, vm.declareGlobal('type', 'unknown'))
+                else
+                    vm.setNode(source, vm.declareGlobal('type', 'nil'))
+                end
+                return
+            end
+            if index >= 3 then
+                vm.setNode(source, vm.declareGlobal('type', 'nil'))
+                return
+            end
             if not args then
                 return
             end
@@ -1739,16 +1771,14 @@ local compilerSwitch = util.switch()
         vm.setNode(source, global)
         if global.cate == 'variable' then
             for luri, link in pairs(global.links) do
-                if luri ~= uri then
-                    local firstSet = link.sets[1]
-                    if firstSet then
-                        local setNode = vm.compileNode(firstSet)
-                        vm.setNode(source, setNode)
-                        if vm.isMetaFile(luri) then
-                            for i = 2, #link.sets do
-                                setNode = vm.compileNode(link.sets[i])
-                                vm.setNode(source, setNode)
-                            end
+                local firstSet = link.sets[1]
+                if firstSet then
+                    local setNode = vm.compileNode(firstSet)
+                    vm.setNode(source, setNode)
+                    if vm.isMetaFile(luri) then
+                        for i = 2, #link.sets do
+                            setNode = vm.compileNode(link.sets[i])
+                            vm.setNode(source, setNode)
                         end
                     end
                 end
@@ -1879,10 +1909,9 @@ function vm.compileNode(source)
 
     ---@cast source parser.object
     vm.setNode(source, vm.createNode(), true)
-    if not vm.compileByGlobal(source) then
-        vm.compileByVariable(source)
-        compileByNode(source)
-    end
+    vm.compileByGlobal(source)
+    vm.compileByVariable(source)
+    compileByNode(source)
     compileByParentNode(source)
     matchCall(source)
 
