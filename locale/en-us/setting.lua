@@ -418,7 +418,7 @@ config.diagnostics['unreachable-code']      =
 config.diagnostics['global-element']        =
 'Enable diagnostics to warn about global variables.'
 config.diagnostics['uppercase-local']       =
-'Enable uppercase local variable definition diagnostics.'
+'Enable diagnostics to warn about local element names starting with an uppercase letter.'
 config.typeFormat.config                    =
 'Configures the formatting behavior while typing Lua code.'
 config.typeFormat.config.auto_complete_end  =

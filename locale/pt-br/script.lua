@@ -153,7 +153,7 @@ DIAG_INVISIBLE_PACKAGE                = -- TODO: need translate!
 DIAG_GLOBAL_ELEMENT                   = -- TODO: need translate!
 'Element is global.'
 DIAG_UPPERCASE_LOCAL                  = -- TODO: need translate!
-'Local variable in uppercase initial, name must start with lowercase letter'
+'Local element `{}` must start with lowercase letter'
 
 MWS_NOT_SUPPORT         =
 '{} não é suportado múltiplos espaços de trabalho por enquanto, posso precisar reiniciar para estabelecer um novo espaço de trabalho ...'

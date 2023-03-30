@@ -153,7 +153,7 @@ DIAG_INVISIBLE_PACKAGE                =
 DIAG_GLOBAL_ELEMENT                   = -- TODO: need translate!
 'Element is global.'
 DIAG_UPPERCASE_LOCAL                  = -- TODO: need translate!
-'Local variable in uppercase initial, name must start with lowercase letter'
+'Local element `{}` must start with lowercase letter'
 
 MWS_NOT_SUPPORT         =
 '{} 目前还不支持多工作目录，我可能需要重启才能支持新的工作目录...'
