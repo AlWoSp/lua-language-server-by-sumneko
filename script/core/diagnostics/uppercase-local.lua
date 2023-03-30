@@ -1,9 +1,6 @@
 local files     = require 'files'
 local guide     = require 'parser.guide'
 local lang      = require 'language'
-local config    = require 'config'
-local vm        = require 'vm'
-local util      = require 'utility'
 
 local function isDocClass(source)
     if not source.bindDocs then
