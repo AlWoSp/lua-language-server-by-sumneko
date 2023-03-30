@@ -153,7 +153,7 @@ DIAG_INVISIBLE_PACKAGE                =
 DIAG_GLOBAL_ELEMENT                   =
 'Element is global.'
 DIAG_UPPERCASE_LOCAL                  =
-'Local variable in uppercase initial, name must start with lowercase letter'
+'Local element `{}` must start with lowercase letter'
 
 
 MWS_NOT_SUPPORT         =

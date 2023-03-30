@@ -24,8 +24,6 @@ return function (uri, callback)
         return
     end
 
-
-
     guide.eachSourceType(ast.ast, 'local', function (source)
         local name = guide.getKeyName(source)
         if not name then
@@ -46,7 +44,7 @@ return function (uri, callback)
         callback {
             start   = source.start,
             finish  = source.finish,
-            message = lang.script.DIAG_UPPERCASE_LOCAL,
+            message = lang.script('DIAG_UPPERCASE_LOCAL', name),
         }
     end)
 end
