@@ -931,7 +931,7 @@ object<string, string>
     */
     "unused-vararg": "Opened",
     /*
-    Enable diagnostic for uppercase local element names.
+    Enable diagnostics to warn about local element names starting with an uppercase letter.
     */
     "uppercase-local": "None"
 }
@@ -1187,7 +1187,7 @@ object<string, string>
     */
     "unused-vararg": "Hint",
     /*
-    Enable diagnostic for uppercase local element names.
+    Enable diagnostics to warn about local element names starting with an uppercase letter.
     */
     "uppercase-local": "Warning"
 }
