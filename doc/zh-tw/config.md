@@ -473,7 +473,7 @@ object<string, string>
     * global-element
     * uppercase-local
     */
-    "strict-convention": "None",
+    "convention": "None",
     /*
     * no-unknown
     */
@@ -597,7 +597,7 @@ object<string, string>
     * global-element
     * uppercase-local
     */
-    "strict-convention": "Fallback",
+    "convention": "Fallback",
     /*
     * no-unknown
     */
