@@ -47,14 +47,6 @@ end
 print(f1())
 ]]
 
-TEST [[
-
-]]
-
-TEST [[
-
-]]
-
 -- reset configurations
 config.set(nil, 'Lua.diagnostics.groupFileStatus', 
 {})
