@@ -90,3 +90,5 @@ require 'diagnostics.missing-global-doc'
 require 'diagnostics.missing-param-doc'
 require 'diagnostics.missing-return-doc'
 require 'diagnostics.global-element'
+require 'diagnostics.uppercase-local'
+

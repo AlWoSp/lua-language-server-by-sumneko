@@ -22,15 +22,17 @@ config.set(nil, 'Lua.diagnostics.groupFileStatus',
 -- enable single diagnostic that is to be tested
 config.set(nil, 'Lua.diagnostics.neededFileStatus',
 {
-    ['global-element'] = 'Any!' -- override groupFileStatus
+    ['uppercase-local'] = 'Any!' -- override groupFileStatus
 })
 
--- check that local elements are not warned about
+-- check that global elements are not warned about
 TEST [[
-local x = 123
-x = 321
-<!Y!> = "global"
-<!z!> = "global"
+Var1 = "global"
+VAR2 = "global"
+
+local x = true
+local <!Y!> = false
+local <!Var!> = false
 ]]
 
 TEST [[
@@ -38,7 +40,7 @@ local function test1()
     print()
 end
 
-function <!Test2!>()
+local function <!Test2!>()
     print()
 end
 ]]
@@ -46,45 +48,12 @@ end
 TEST [[
 local function closure1()
     local elem1 = 1
-    <!elem2!> = 2
+    local <!Elem2!> = 2
 end
 
-function <!Closure2!>()
+local function <!Closure2!>()
     local elem1 = 1
-    <!elem2!> = 2
-end
-]]
-
--- add elements to exemption list
-config.set(nil, 'Lua.diagnostics.globals',
-{
-    'GLOBAL1',
-    'GLOBAL2',
-    'GLOBAL_CLOSURE'
-})
-
-TEST [[
-GLOBAL1 = "allowed"
-<!global2!> = "not allowed"
-<!GLOBAL3!> = "not allowed"
-]]
-
-TEST [[
-function GLOBAL1()
-    print()
-end
-]]
-
-TEST [[
-local function closure1()
-    local elem1 = 1
-    GLOBAL1 = 2
-end
-
-function GLOBAL_CLOSURE()
-    local elem1 = 1
-    GLOBAL2 = 2
-    <!elem2!> = 2
+    local <!Elem2!> = 2
 end
 ]]
 
