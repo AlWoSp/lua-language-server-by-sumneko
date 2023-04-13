@@ -820,7 +820,7 @@ object<string, string>
     */
     "missing-param-doc": "None",
     /*
-    Enable diagnostics for function definitions where the number of arguments is less than the number of annotated function parameters.
+    Enable diagnostics for function calls where the number of arguments is less than the number of annotated function parameters.
     */
     "missing-parameter": "Any",
     /*
@@ -828,9 +828,9 @@ object<string, string>
     */
     "missing-return": "Any",
     /*
-    Enable diagnostics for function calls where a return annotation is missing.
+    Enable diagnostics for function definitions where a return annotation is missing.
     */
-    "missing-param-doc": "None",
+    "missing-return-doc": "Any",
     /*
     Enable diagnostics for return statements without values although the containing function declares returns.
     */
@@ -1080,11 +1080,11 @@ object<string, string>
     */
     "lowercase-global": "Information",
     /*
-    Enable diagnostics for global function calls which are not annotated.
+    Enable diagnostics for global function definitions which are not annotated.
     */
     "missing-global-doc": "Warning",
     /*
-    Enable diagnostics for function calls where the annotation for a function parameter is missing.
+    Enable diagnostics for function definitions where the annotation for a function parameter is missing.
     */
     "missing-param-doc": "Warning",
     /*
@@ -1096,7 +1096,7 @@ object<string, string>
     */
     "missing-return": "Warning",
     /*
-    Enable diagnostics for function calls where a return annotation is missing.
+    Enable diagnostics for function definitions where a return annotation is missing.
     */
     "missing-return-doc": "Warning",
     /*
