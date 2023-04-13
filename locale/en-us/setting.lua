@@ -376,11 +376,11 @@ config.diagnostics['duplicate-set-field']   =
 config.diagnostics['invisible']             =
 'Enable diagnostics for accesses to fields which are invisible.'
 config.diagnostics['missing-global-doc']    =
-'Missing documentation for globals.'
+'Global functions must have a comment.'
 config.diagnostics['missing-param-doc']     =
-'Missing @param annotation.'
+'Global functions must have annotations for all parameters.'
 config.diagnostics['missing-return-doc']    =
-'Missing @return annotation.'
+'Global functions must have annotations for all return values.'
 config.diagnostics['missing-parameter']     =
 'Enable diagnostics for function calls where the number of arguments is less than the number of annotated function parameters.'
 config.diagnostics['missing-return']        =
