@@ -812,15 +812,15 @@ object<string, string>
     */
     "lowercase-global": "Any",
     /*
-    Enable diagnostics for global function calls which are not annotated.
+    Enable diagnostics for global function definitions which are not fully annotated.
     */
     "missing-global-doc": "None",
     /*
-    Enable diagnostics for function calls where the annotation for a function parameter is missing.
+    Enable diagnostics for function definitions where the annotation for a function parameter is missing.
     */
     "missing-param-doc": "None",
     /*
-    Enable diagnostics for function calls where the number of arguments is less than the number of annotated function parameters.
+    Enable diagnostics for function definitions where the number of arguments is less than the number of annotated function parameters.
     */
     "missing-parameter": "Any",
     /*
