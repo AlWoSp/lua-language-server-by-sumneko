@@ -101,9 +101,7 @@ m.register {
 }
 
 m.register {
-    'missing-global-doc',
-    'missing-param-doc',
-    'missing-return-doc',
+    'incomplete-signature-doc',
 } {
 	group    = 'luadoc',
 	severity = 'Warning',

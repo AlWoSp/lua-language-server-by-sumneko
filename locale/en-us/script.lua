@@ -114,12 +114,10 @@ DIAG_UNDEFINED_DOC_NAME               =
 'Undefined type or alias `{}`.'
 DIAG_UNDEFINED_DOC_PARAM              =
 'Undefined param `{}`.'
-DIAG_MISSING_GLOBAL_DOC               =
-'Missing annotation of global `{}`.'
-DIAG_MISSING_PARAM_DOC                =
+DIAG_INCOMPLETE_SIGNATURE_DOC_PARAM   =
 'Missing @param annotation for `{}`.'
-DIAG_MISSING_RETURN_DOC               =
-'Missing @return annotation.'
+DIAG_INCOMPLETE_SIGNATURE_DOC_RETURN  =
+'Missing @return annotation for index `{}`.'
 DIAG_UNKNOWN_DIAG_CODE                =
 'Unknown diagnostic code `{}`.'
 DIAG_CAST_LOCAL_TYPE                  =

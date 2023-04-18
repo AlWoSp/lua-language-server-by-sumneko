@@ -114,12 +114,10 @@ DIAG_UNDEFINED_DOC_NAME               =
 '未定義的類型或別名 `{}`。'
 DIAG_UNDEFINED_DOC_PARAM              =
 '指向了未定義的參數 `{}`。'
-DIAG_MISSING_GLOBAL_DOC               =   -- TODO: need translate!
-'Missing annotation of global `{}`.'
-DIAG_MISSING_PARAM_DOC                =   -- TODO: need translate!
+DIAG_INCOMPLETE_SIGNATURE_DOC_PARAM   = -- TODO: need translate! 
 'Missing @param annotation for `{}`.'
-DIAG_MISSING_RETURN_DOC               =   -- TODO: need translate!
-'Missing @return annotation.'
+DIAG_INCOMPLETE_SIGNATURE_DOC_RETURN  = -- TODO: need translate!
+'Missing @return annotation for index `{}`.'
 DIAG_UNKNOWN_DIAG_CODE                =
 '未知的診斷代碼 `{}`。'
 DIAG_CAST_LOCAL_TYPE                  =

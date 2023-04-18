@@ -240,6 +240,7 @@ Array<string>
 * ``"exp-in-action"``
 * ``"global-element"``
 * ``"global-in-nil-env"``
+* ``"incomplete-signature-doc"``
 * ``"index-in-func-name"``
 * ``"invisible"``
 * ``"jump-local-scope"``
@@ -284,11 +285,8 @@ Array<string>
 * ``"miss-sep-in-table"``
 * ``"miss-space-between"``
 * ``"miss-symbol"``
-* ``"missing-global-doc"``
-* ``"missing-param-doc"``
 * ``"missing-parameter"``
 * ``"missing-return"``
-* ``"missing-return-doc"``
 * ``"missing-return-value"``
 * ``"need-check-nil"``
 * ``"need-paren"``
@@ -453,9 +451,7 @@ object<string, string>
     * duplicate-doc-alias
     * duplicate-doc-field
     * duplicate-doc-param
-    * missing-global-doc
-    * missing-param-doc
-    * missing-return-doc
+    * incomplete-signature-doc
     * undefined-doc-class
     * undefined-doc-name
     * undefined-doc-param
@@ -580,9 +576,7 @@ object<string, string>
     * duplicate-doc-alias
     * duplicate-doc-field
     * duplicate-doc-param
-    * missing-global-doc
-    * missing-param-doc
-    * missing-return-doc
+    * incomplete-signature-doc
     * undefined-doc-class
     * undefined-doc-name
     * undefined-doc-param
@@ -804,6 +798,10 @@ object<string, string>
     */
     "global-in-nil-env": "Any",
     /*
+    Enable diagnostics for global function definitions which are not fully annotated.
+    */
+    "incomplete-signature-doc": "None",
+    /*
     Enable diagnostics for accesses to fields which are invisible.
     */
     "invisible": "Any",
@@ -812,14 +810,6 @@ object<string, string>
     */
     "lowercase-global": "Any",
     /*
-    Enable diagnostics for global function definitions which are not fully annotated.
-    */
-    "missing-global-doc": "None",
-    /*
-    Enable diagnostics for function definitions where the annotation for a function parameter is missing.
-    */
-    "missing-param-doc": "None",
-    /*
     Enable diagnostics for function calls where the number of arguments is less than the number of annotated function parameters.
     */
     "missing-parameter": "Any",
@@ -827,10 +817,6 @@ object<string, string>
     Enable diagnostics for functions with return annotations which have no return statement.
     */
     "missing-return": "Any",
-    /*
-    Enable diagnostics for function definitions where a return annotation is missing.
-    */
-    "missing-return-doc": "Any",
     /*
     Enable diagnostics for return statements without values although the containing function declares returns.
     */
@@ -1072,6 +1058,10 @@ object<string, string>
     */
     "global-in-nil-env": "Warning",
     /*
+    Enable diagnostics for global function definitions which are not fully annotated.
+    */
+    "incomplete-signature-doc": "Warning",
+    /*
     Enable diagnostics for accesses to fields which are invisible.
     */
     "invisible": "Warning",
@@ -1080,14 +1070,6 @@ object<string, string>
     */
     "lowercase-global": "Information",
     /*
-    Enable diagnostics for global function definitions which are not annotated.
-    */
-    "missing-global-doc": "Warning",
-    /*
-    Enable diagnostics for function definitions where the annotation for a function parameter is missing.
-    */
-    "missing-param-doc": "Warning",
-    /*
     Enable diagnostics for function calls where the number of arguments is less than the number of annotated function parameters.
     */
     "missing-parameter": "Warning",
@@ -1095,10 +1077,6 @@ object<string, string>
     Enable diagnostics for functions with return annotations which have no return statement.
     */
     "missing-return": "Warning",
-    /*
-    Enable diagnostics for function definitions where a return annotation is missing.
-    */
-    "missing-return-doc": "Warning",
     /*
     Enable diagnostics for return statements without values although the containing function declares returns.
     */

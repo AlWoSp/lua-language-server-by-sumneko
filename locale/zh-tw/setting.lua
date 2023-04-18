@@ -372,14 +372,10 @@ config.diagnostics['duplicate-doc-param']   = -- TODO: need translate!
 'Enable diagnostics for a duplicated param annotation name.'
 config.diagnostics['duplicate-set-field']   = -- TODO: need translate!
 'Enable diagnostics for setting the same field in a class more than once.'
+config.diagnostics['incomplete-signature-doc']    =
+'Missing annotations for globals! Global functions must have a comment and annotations for all parameters and return values.'
 config.diagnostics['invisible']             = -- TODO: need translate!
 'Enable diagnostics for accesses to fields which are invisible.'
-config.diagnostics['missing-global-doc']    = -- TODO: need translate!
-'Global functions must have a comment.'
-config.diagnostics['missing-param-doc']     = -- TODO: need translate!
-'Global functions must have annotations for all parameters.'
-config.diagnostics['missing-return-doc']    = -- TODO: need translate!
-'Global functions must have annotations for all return values.'
 config.diagnostics['missing-parameter']     = -- TODO: need translate!
 'Enable diagnostics for function calls where the number of arguments is less than the number of annotated function parameters.'
 config.diagnostics['missing-return']        = -- TODO: need translate!
