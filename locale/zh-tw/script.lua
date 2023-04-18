@@ -117,7 +117,7 @@ DIAG_UNDEFINED_DOC_PARAM              =
 DIAG_INCOMPLETE_SIGNATURE_DOC_PARAM   = -- TODO: need translate! 
 'Missing @param annotation for `{}`.'
 DIAG_INCOMPLETE_SIGNATURE_DOC_RETURN  = -- TODO: need translate!
-'Missing @return annotation for index `{}`.'
+'Missing @return annotation at index `{}`.'
 DIAG_UNKNOWN_DIAG_CODE                =
 '未知的診斷代碼 `{}`。'
 DIAG_CAST_LOCAL_TYPE                  =

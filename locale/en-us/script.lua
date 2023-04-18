@@ -117,7 +117,7 @@ DIAG_UNDEFINED_DOC_PARAM              =
 DIAG_INCOMPLETE_SIGNATURE_DOC_PARAM   =
 'Missing @param annotation for `{}`.'
 DIAG_INCOMPLETE_SIGNATURE_DOC_RETURN  =
-'Missing @return annotation for index `{}`.'
+'Missing @return annotation at index `{}`.'
 DIAG_UNKNOWN_DIAG_CODE                =
 'Unknown diagnostic code `{}`.'
 DIAG_CAST_LOCAL_TYPE                  =
