@@ -22,13 +22,14 @@ config.set(nil, 'Lua.diagnostics.groupFileStatus',
 -- enable single diagnostic that is to be tested
 config.set(nil, 'Lua.diagnostics.neededFileStatus',
 {
-    ['incomplete-signature-doc'] = 'Any!' -- override groupFileStatus
+    ['missing-global-doc'] = 'Any!' -- override groupFileStatus
 })
+
 
 -- check global functions
 TEST [[
-function FG0()
-end
+<!function FG0()
+end!>
 
 ---comment
 function FG1()
@@ -36,7 +37,7 @@ end
 ]]
 
 TEST [[
-function FGP0(p)
+function FGP0(<!p!>)
   print(p)
 end
 
@@ -53,7 +54,7 @@ end
 ]]
 
 TEST [[
-function FGPP0(p0, p1)
+function FGPP0(<!p0!>, <!p1!>)
   print(p0, p1)
 end
 
@@ -78,7 +79,7 @@ end
 
 TEST [[
 function FGR0()
-  return 0
+  return <!0!>
 end
 
 ---comment
@@ -95,7 +96,7 @@ end
 
 TEST [[
 function FGRR0()
-  return 0, 1
+  return <!0!>, <!1!>
 end
 
 ---comment
@@ -117,10 +118,11 @@ function FGRR3()
 end
 ]]
 
+
 TEST [[
-function FGPR0(p)
+function FGPR0(<!p!>)
   print(p)
-  return 0
+  return <!0!>
 end
 
 ---comment
@@ -175,7 +177,7 @@ end
 FLP0(0)
 
 ---comment
-local function FLP1(<!p!>)
+local function FLP1(p)
   print(p)
 end
 
@@ -198,7 +200,7 @@ end
 FLPP0(0, 1)
 
 ---comment
-local function FLPP1(<!p0!>, <!p1!>)
+local function FLPP1(p0, p1)
   print(p0, p1)
 end
 
@@ -206,7 +208,7 @@ FLPP1(0, 1)
 
 ---comment
 ---@param p0 any
-local function FLPP2(p0, <!p1!>)
+local function FLPP2(p0, p1)
   print(p0, p1)
 end
 
@@ -231,7 +233,7 @@ local vr0 = FLR0()
 
 ---comment
 local function FLR1()
-  return <!0!>
+  return 0
 end
 
 local vr1 = FLR1()
@@ -254,7 +256,7 @@ local vrr0, _ = FLRR0()
 
 ---comment
 local function FLRR1()
-  return <!0!>, <!1!>
+  return 0, 1
 end
 
 local vrr1, _ = FLRR1()
@@ -262,7 +264,7 @@ local vrr1, _ = FLRR1()
 ---comment
 ---@return integer
 local function FLRR2()
-  return 0, <!1!>
+  return 0, 1
 end
 
 local vrr2, _ = FLRR2()
@@ -286,9 +288,9 @@ end
 local vpr0 = FLPR0(0)
 
 ---comment
-local function FLPR1(<!p!>)
+local function FLPR1(p)
   print(p)
-  return <!0!>
+  return 0
 end
 
 local vpr1 = FLPR1(0)
@@ -297,14 +299,14 @@ local vpr1 = FLPR1(0)
 ---@param p any
 local function FLPR2(p)
   print(p)
-  return <!0!>
+  return 0
 end
 
 local vpr2 = FLPR2(0)
 
 ---comment
 ---@return integer
-local function FLPR3(<!p!>)
+local function FLPR3(p)
   print(p)
   return 0
 end

@@ -1,4 +1,3 @@
--- incomplete-signature-doc
 local files   = require 'files'
 local lang    = require 'language'
 local guide   = require "parser.guide"
@@ -53,11 +52,19 @@ return function (uri, callback)
     guide.eachSourceType(state.ast, 'function', function (source)
         await.delay()
 
-        if not source.bindDocs then
+        if source.parent.type ~= 'setglobal' then
             return
         end
 
         local functionName = source.parent[1]
+
+        if #source.args == 0 and not source.returns and not source.bindDocs then
+            callback {
+                start   = source.start,
+                finish  = source.finish,
+                message = lang.script('DIAG_MISSING_GLOBAL_DOC_COMMENT', functionName),
+            }
+        end
 
         if #source.args > 0 then
             for _, arg in ipairs(source.args) do
@@ -67,7 +74,7 @@ return function (uri, callback)
                         callback {
                             start   = arg.start,
                             finish  = arg.finish,
-                            message = lang.script('DIAG_INCOMPLETE_SIGNATURE_DOC_PARAM', argName, functionName),
+                            message = lang.script('DIAG_MISSING_GLOBAL_DOC_PARAM', argName, functionName),
                         }
                     end
                 end
@@ -81,7 +88,7 @@ return function (uri, callback)
                         callback {
                             start   = expr.start,
                             finish  = expr.finish,
-                            message = lang.script('DIAG_INCOMPLETE_SIGNATURE_DOC_RETURN', index, functionName),
+                            message = lang.script('DIAG_MISSING_GLOBAL_DOC_RETURN', index, functionName),
                         }
                     end
                 end

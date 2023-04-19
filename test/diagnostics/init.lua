@@ -87,6 +87,7 @@ end
 require 'diagnostics.common'
 require 'diagnostics.type-check'
 require 'diagnostics.incomplete-signature-doc'
+require 'diagnostics.missing-global-doc'
 require 'diagnostics.global-element'
 require 'diagnostics.uppercase-local'
 
