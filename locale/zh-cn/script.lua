@@ -123,7 +123,7 @@ DIAG_MISSING_GLOBAL_DOC_RETURN        = -- TODO: need translate!
 DIAG_INCOMPLETE_SIGNATURE_DOC_PARAM   = -- TODO: need translate!
 'Incomplete signature. Missing @param annotation for parameter `{}` in function `{}`.'
 DIAG_INCOMPLETE_SIGNATURE_DOC_RETURN  = -- TODO: need translate!
-'Incomplete signature . Missing @return annotation at index `{}` in function `{}`.'
+'Incomplete signature. Missing @return annotation at index `{}` in function `{}`.'
 DIAG_UNKNOWN_DIAG_CODE                =
 '未知的诊断代号 `{}`。'
 DIAG_CAST_LOCAL_TYPE                  =
