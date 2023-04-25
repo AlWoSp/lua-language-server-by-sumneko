@@ -118,6 +118,7 @@ m.register {
 }
 
 m.register {
+    'namestyle-check',
     'spell-check'
 } {
     group    = 'codestyle',
