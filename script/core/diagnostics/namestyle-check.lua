@@ -5,8 +5,7 @@ local pformatting = require 'provider.formatting'
 
 
 ---@async
-return function(uri, callback)
-    local state = files.getState(uri)
+return function(uri, callback)    local state = files.getState(uri)
     if not state then
         return
     end
@@ -33,7 +32,8 @@ return function(uri, callback)
         for _, diagnosticInfo in ipairs(diagnosticInfos) do
             callback {
                 start   = converter.unpackPosition(state, diagnosticInfo.range.start),
-                finish  = converter.unpackPosition(state, diagnosticInfo.range["end"]),
+                -- end index needs to be increased for correct handling in language server
+                finish  = converter.unpackPosition(state, diagnosticInfo.range["end"]) + 1,
                 message = diagnosticInfo.message
             }
         end
