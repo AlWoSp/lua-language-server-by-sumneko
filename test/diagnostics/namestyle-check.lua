@@ -27,7 +27,7 @@ config.set(nil, 'Lua.diagnostics.neededFileStatus',
 
 -- check that namestyle-check is executed
 TEST [[
-local <!NAMEnOTmATCHINGcONVENTION!> = "test"
+local <!NAME!> = "test"
 ]]
 
 -- reset configurations
