@@ -385,6 +385,8 @@ config.diagnostics['missing-return']        =
 'Enable diagnostics for functions with return annotations which have no return statement.'
 config.diagnostics['missing-return-value']  =
 'Enable diagnostics for return statements without values although the containing function declares returns.'
+config.diagnostics['namestyle-check']       =
+'Enable diagnostics for incorrectly named elements.'
 config.diagnostics['need-check-nil']        =
 'Enable diagnostics for variable usages if `nil` or an optional (potentially `nil`) value was assigned to the variable before.'
 config.diagnostics['no-unknown']            =

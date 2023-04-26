@@ -289,6 +289,7 @@ Array<string>
 * ``"missing-parameter"``
 * ``"missing-return"``
 * ``"missing-return-value"``
+* ``"namestyle-check"``
 * ``"need-check-nil"``
 * ``"need-paren"``
 * ``"nesting-long-mark"``
@@ -430,6 +431,7 @@ object<string, string>
     "await": "Fallback",
     /*
     * codestyle-check
+    * namestyle-check
     * spell-check
     */
     "codestyle": "Fallback",
@@ -555,6 +557,7 @@ object<string, string>
     "await": "Fallback",
     /*
     * codestyle-check
+    * namestyle-check
     * spell-check
     */
     "codestyle": "Fallback",
@@ -826,6 +829,10 @@ object<string, string>
     */
     "missing-return-value": "Any",
     /*
+    Enable diagnostics for incorrectly named elements.
+    */
+    "namestyle-check": "None",
+    /*
     Enable diagnostics for variable usages if `nil` or an optional (potentially `nil`) value was assigned to the variable before.
     */
     "need-check-nil": "Opened",
@@ -1084,6 +1091,10 @@ object<string, string>
     Enable diagnostics for return statements without values although the containing function declares returns.
     */
     "missing-return-value": "Warning",
+        /*
+    Enable diagnostics for incorrectly named elements.
+    */
+    "namestyle-check": "Information",
     /*
     Enable diagnostics for variable usages if `nil` or an optional (potentially `nil`) value was assigned to the variable before.
     */
