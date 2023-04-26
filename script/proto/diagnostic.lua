@@ -183,7 +183,6 @@ m.register {
 
 m.register {
     'global-element',
-    'uppercase-local',
 } {
     group   = 'conventions',
     severity = 'Warning',
