@@ -22,9 +22,6 @@ config.set(nil, 'Lua.diagnostics.groupFileStatus',
 -- enable single diagnostic that is to be tested
 config.set(nil, 'Lua.diagnostics.neededFileStatus',
 {
-    ['unused-local'] = 'None!',
-    ['unused-function'] = 'None!',
-    ['redundant-return-value'] = 'None!',
     ['incomplete-signature-doc'] = 'Any!' -- override groupFileStatus
 })
 
@@ -129,8 +126,8 @@ function FGRR2()
 end
 
 ---comment
----@return number
----@return number
+---@return integer
+---@return integer
 function FGRR3()
   return 0, 1
 end
@@ -253,22 +250,19 @@ local function FLR0()
 end
 
 local vr0 = FLR0()
-]]
-TEST [[
+
 ---comment
 local function FLR1()
   return 0
 end
-]]
-TEST [[
+
 ---@async
 local function FLR1_()
   return 0
 end
 
 local vr1 = FLR1()
-]]
-TEST [[
+
 ---comment
 ---@return integer
 local function FLR2()
