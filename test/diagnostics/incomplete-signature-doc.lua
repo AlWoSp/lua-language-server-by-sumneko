@@ -22,6 +22,9 @@ config.set(nil, 'Lua.diagnostics.groupFileStatus',
 -- enable single diagnostic that is to be tested
 config.set(nil, 'Lua.diagnostics.neededFileStatus',
 {
+    ['unused-local'] = 'None!',
+    ['unused-function'] = 'None!',
+    ['redundant-return-value'] = 'None!',
     ['incomplete-signature-doc'] = 'Any!' -- override groupFileStatus
 })
 
@@ -41,7 +44,12 @@ function FGP0(p)
 end
 
 ---comment
-function FGP1(<!p!>)
+function FGP1(p)
+  print(p)
+end
+
+---@async
+function FGP1_(p)
   print(p)
 end
 
@@ -58,13 +66,19 @@ function FGPP0(p0, p1)
 end
 
 ---comment
-function FGPP1(<!p0!>, <!p1!>)
+function FGPP1(p0, p1)
   print(p0, p1)
 end
 
 ---comment
 ---@param p0 any
 function FGPP2(p0, <!p1!>)
+  print(p0, p1)
+end
+
+---comment
+---@param p1 any
+function FGPP2_(<!p0!>, p1)
   print(p0, p1)
 end
 
@@ -83,7 +97,12 @@ end
 
 ---comment
 function FGR1()
-  return <!0!>
+  return 0
+end
+
+---@async
+function FGR1_()
+  return 0
 end
 
 ---comment
@@ -100,7 +119,7 @@ end
 
 ---comment
 function FGRR1()
-  return <!0!>, <!1!>
+  return 0, 1
 end
 
 ---comment
@@ -110,8 +129,8 @@ function FGRR2()
 end
 
 ---comment
----@return integer
----@return integer
+---@return number
+---@return number
 function FGRR3()
   return 0, 1
 end
@@ -124,9 +143,15 @@ function FGPR0(p)
 end
 
 ---comment
-function FGPR1(<!p!>)
+function FGPR1(p)
   print(p)
-  return <!0!>
+  return 0
+end
+
+---@async
+function FGPR1_(p)
+  print(p)
+  return 0
 end
 
 ---comment
@@ -175,7 +200,7 @@ end
 FLP0(0)
 
 ---comment
-local function FLP1(<!p!>)
+local function FLP1(p)
   print(p)
 end
 
@@ -198,7 +223,7 @@ end
 FLPP0(0, 1)
 
 ---comment
-local function FLPP1(<!p0!>, <!p1!>)
+local function FLPP1(p0, p1)
   print(p0, p1)
 end
 
@@ -228,14 +253,22 @@ local function FLR0()
 end
 
 local vr0 = FLR0()
-
+]]
+TEST [[
 ---comment
 local function FLR1()
-  return <!0!>
+  return 0
+end
+]]
+TEST [[
+---@async
+local function FLR1_()
+  return 0
 end
 
 local vr1 = FLR1()
-
+]]
+TEST [[
 ---comment
 ---@return integer
 local function FLR2()
@@ -254,7 +287,7 @@ local vrr0, _ = FLRR0()
 
 ---comment
 local function FLRR1()
-  return <!0!>, <!1!>
+  return 0, 1
 end
 
 local vrr1, _ = FLRR1()
@@ -286,9 +319,15 @@ end
 local vpr0 = FLPR0(0)
 
 ---comment
-local function FLPR1(<!p!>)
+local function FLPR1(p)
   print(p)
-  return <!0!>
+  return 0
+end
+
+---@async
+local function FLPR1_(p)
+  print(p)
+  return 0
 end
 
 local vpr1 = FLPR1(0)
