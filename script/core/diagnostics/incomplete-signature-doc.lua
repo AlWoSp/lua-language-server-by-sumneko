@@ -74,32 +74,34 @@ return function (uri, callback)
 
         --- don't apply rule if there is no @param or @return annotation yet
         --- so comments and @async can be applied without the need for a full documentation
-        if(findSignatureDoc(source.bindDocs)) then
-            if source.args and #source.args > 0 then
-                for _, arg in ipairs(source.args) do
-                    local argName = arg[1]
-                    if argName ~= 'self' then
-                        if not findParam(source.bindDocs, argName) then
-                            callback {
-                                start   = arg.start,
-                                finish  = arg.finish,
-                                message = lang.script('DIAG_INCOMPLETE_SIGNATURE_DOC_PARAM', argName, functionName),
-                            }
-                        end
+        if(not findSignatureDoc(source.bindDocs)) then
+            return
+        end
+
+        if source.args and #source.args > 0 then
+            for _, arg in ipairs(source.args) do
+                local argName = arg[1]
+                if argName ~= 'self' then
+                    if not findParam(source.bindDocs, argName) then
+                        callback {
+                            start   = arg.start,
+                            finish  = arg.finish,
+                            message = lang.script('DIAG_INCOMPLETE_SIGNATURE_DOC_PARAM', argName, functionName),
+                        }
                     end
                 end
             end
+        end
 
-            if  source.returns then
-                for _, ret in ipairs(source.returns) do
-                    for index, expr in ipairs(ret) do
-                        if not findReturn(source.bindDocs, index) then
-                            callback {
-                                start   = expr.start,
-                                finish  = expr.finish,
-                                message = lang.script('DIAG_INCOMPLETE_SIGNATURE_DOC_RETURN', index, functionName),
-                            }
-                        end
+        if  source.returns then
+            for _, ret in ipairs(source.returns) do
+                for index, expr in ipairs(ret) do
+                    if not findReturn(source.bindDocs, index) then
+                        callback {
+                            start   = expr.start,
+                            finish  = expr.finish,
+                            message = lang.script('DIAG_INCOMPLETE_SIGNATURE_DOC_RETURN', index, functionName),
+                        }
                     end
                 end
             end
